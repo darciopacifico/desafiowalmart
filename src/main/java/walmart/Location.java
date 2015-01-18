@@ -10,43 +10,29 @@ import org.springframework.data.neo4j.annotation.NodeEntity;
 import org.springframework.data.neo4j.annotation.RelatedTo;
 import org.springframework.data.neo4j.annotation.RelatedToVia;
 
-
 /**
  * 
  * @author darcio
  */
 @NodeEntity
 public class Location {
-	
-    @GraphId 
-    private Long id;
-    
-    
-    private String name;
-	
-    
-    public Location() {
+
+	@GraphId
+	private Long id;
+
+	private String name;
+
+	public Location() {
 	}
 
-    public Location(String name) {
+	public Location(String name) {
 		super();
 		this.name = name;
 	}
 
-	@RelatedToVia(direction=Direction.BOTH,type="ROAD")
+	@RelatedToVia
 	@Fetch
-    private Set<Route> connections = new HashSet<Route>(5);
-	
-	
-	
-
-	public Set<Route> getConnections() {
-		return connections;
-	}
-
-	public void setConnections(Set<Route> connection) {
-		this.connections = connection;
-	}
+	Set<Route> connections = new HashSet<Route>(5);
 
 	/**
 	 * 
@@ -55,15 +41,12 @@ public class Location {
 	 * @param connectionType
 	 * @return
 	 */
-	public Route connectTo(Location otherLoc, Float distance, String connectionType){
-		Route route = new Route(connectionType,this,otherLoc,distance);
+	public Route connectTo(Location otherLoc, Float distance) {
+		Route route = new Route(this,otherLoc, distance);
 		this.connections.add(route);
 		return route;
 	}
-	
 
-	
-	
 	public Long getId() {
 		return id;
 	}
@@ -80,5 +63,12 @@ public class Location {
 		this.name = name;
 	}
 
-    
+	public Set<Route> getConnections() {
+		return connections;
+	}
+
+	public void setConnections(Set<Route> connections) {
+		this.connections = connections;
+	}
+
 }

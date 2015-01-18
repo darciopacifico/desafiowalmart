@@ -1,62 +1,46 @@
 package walmart;
 
 import org.springframework.data.neo4j.annotation.EndNode;
+import org.springframework.data.neo4j.annotation.Fetch;
 import org.springframework.data.neo4j.annotation.GraphId;
+import org.springframework.data.neo4j.annotation.GraphProperty;
 import org.springframework.data.neo4j.annotation.RelationshipEntity;
 import org.springframework.data.neo4j.annotation.RelationshipType;
 import org.springframework.data.neo4j.annotation.StartNode;
-
 
 
 @RelationshipEntity(type="ROAD")
 public class Route {
 	
 	@GraphId
-	private Long id;
-	
-	public Long getId() {
-		return id;
-	}
-
-
-	public void setId(Long id) {
-		this.id = id;
-	}
-
+	Long id;
 
 	@RelationshipType
-	String connectionType;
+	EnumConnectionType type;
 
+
+
+	@GraphProperty
+	Float distance;
+	
 	@StartNode
+	@Fetch
 	Location startLocation;
 
 	@EndNode
+	@Fetch
 	Location endLocation;
 	
-	
-	Float distance;
-
 	
 	public Route() {
 	}
 	
 
-	public Route(String connectionType, Location startLocation, Location endLocation, Float distance) {
+	public Route(Location startLocation, Location endLocation, Float distance) {
 		super();
-		this.connectionType = connectionType;
 		this.startLocation = startLocation;
 		this.endLocation = endLocation;
 		this.distance = distance;
-	}
-
-
-	public String getConnectionType() {
-		return connectionType;
-	}
-
-
-	public void setConnectionType(String connectionType) {
-		this.connectionType = connectionType;
 	}
 
 
@@ -90,8 +74,24 @@ public class Route {
 	}
 	
 	
-	
-	
+	public EnumConnectionType getType() {
+		return type;
+	}
+
+
+	public void setType(EnumConnectionType type) {
+		this.type = type;
+	}
+
+
+	public Long getId() {
+		return id;
+	}
+
+
+	public void setId(Long id) {
+		this.id = id;
+	}
 	
 	
 }
