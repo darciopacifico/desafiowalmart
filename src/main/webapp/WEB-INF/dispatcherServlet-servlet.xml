@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- ~ Copyright 2005-2013 the original author or authors. ~ ~ Licensed under 
+	the Apache License, Version 2.0 (the "License"); ~ you may not use this file 
+	except in compliance with the License. ~ You may obtain a copy of the License 
+	at ~ ~ http://www.apache.org/licenses/LICENSE-2.0 ~ ~ Unless required by 
+	applicable law or agreed to in writing, software ~ distributed under the 
+	License is distributed on an "AS IS" BASIS, ~ WITHOUT WARRANTIES OR CONDITIONS 
+	OF ANY KIND, either express or implied. ~ See the License for the specific 
+	language governing permissions and ~ limitations under the License. -->
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:ldap="http://www.springframework.org/schema/ldap" 
+	xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xmlns:neo4j="http://www.springframework.org/schema/data/neo4j"
+	xsi:schemaLocation="
+	http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd 
+	http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd 
+	http://www.springframework.org/schema/ldap http://www.springframework.org/schema/ldap/spring-ldap.xsd 
+	http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc.xsd
+	http://www.springframework.org/schema/data/neo4j http://www.springframework.org/schema/data/neo4j/spring-neo4j.xsd">
+
+
+	<context:component-scan base-package="walmart" />
+    <context:annotation-config />
+
+	<neo4j:repositories base-package="walmart"/>
+	<neo4j:config graphDatabaseService="graphDatabaseService" base-package="walmart"/>
+	
+	
+	<bean id="graphDatabaseService"
+		class="org.springframework.data.neo4j.rest.SpringRestGraphDatabase">
+	  <constructor-arg index="0" value="http://localhost:7474/db/data" />
+	</bean>
+
+    <bean id="jsonView" class="org.springframework.web.servlet.view.json.MappingJacksonJsonView" >
+    </bean>
+
+    <bean id="jsonMessageConverter" class="org.springframework.http.converter.json.MappingJackson2HttpMessageConverter">
+    </bean>
+    
+    <mvc:annotation-driven />
+	<!-- 
+	 -->	 
+
+</beans>
