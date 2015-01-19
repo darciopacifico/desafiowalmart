@@ -46,6 +46,23 @@ public class Location {
 		this.connections.add(route);
 		return route;
 	}
+	
+	/**
+	 * 
+	 * @param otherLoc
+	 * @param distance
+	 * @param connectionType
+	 * @return
+	 */
+	public Route connectTo(Location otherLoc, Float distance, EnumConnectionType type) {
+		
+		Route route = connectTo(otherLoc, distance);
+		
+		route.setType(type);
+		
+		return route;
+		
+	}
 
 	public Long getId() {
 		return id;

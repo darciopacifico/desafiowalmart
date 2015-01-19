@@ -11,6 +11,7 @@ import org.neo4j.cypher.javacompat.ExecutionEngine;
 import org.neo4j.cypher.javacompat.ExecutionResult;
 import org.neo4j.graphalgo.CommonEvaluators;
 import org.neo4j.graphalgo.CostEvaluator;
+import org.neo4j.graphalgo.EstimateEvaluator;
 import org.neo4j.graphalgo.GraphAlgoFactory;
 import org.neo4j.graphalgo.PathFinder;
 import org.neo4j.graphalgo.WeightedPath;
@@ -19,6 +20,7 @@ import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.PathExpander;
 import org.neo4j.graphdb.PathExpanders;
+import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.RelationshipExpander;
 import org.neo4j.graphdb.ResourceIterator;
 import org.neo4j.graphdb.Transaction;
@@ -75,41 +77,93 @@ public class DesafioWalmartApplication extends Neo4jConfiguration implements Com
 	private void shortestPathDijkstra() {
 		
 		System.out.println();
-		System.out.println("Menor caminho de A ate D");
+		System.out.println("Menor caminho ");
 		
-		PathExpander<Object> expander = PathExpanders.forTypeAndDirection( EnumConnectionType.ROAD, Direction.BOTH );
+		PathExpander<Object> expander = PathExpanders.allTypesAndDirections();
 		
-		PathFinder<WeightedPath> finder = GraphAlgoFactory.dijkstra(expander, "distance");
+		
+		//PathFinder<WeightedPath> finder = GraphAlgoFactory.dijkstra(expander, "distance");
+		
+		
+		EstimateEvaluator<Double> estimateEvaluator = new EstimateEvaluator<Double>() {
+			@Override
+			public Double getCost(Node arg0, Node arg1) {
+				
+				System.out.println("heur: " + arg0.getProperty("name") +" " +arg1.getProperty("name"));
+				
+				return 10d;
+			}
+		};
+		
+		
+		CostEvaluator<Double> lengthEvaluator =  new CostEvaluator<Double>() {
+			
+			public Double getCost(Relationship relationship, Direction direction) {
+				
+				//STREET, ROAD, FREEWAY, FERRY, DIRT_ROAD, BRIDGE; 
+				
+				Double distance = (Double) relationship.getProperty("distance");
+				
+			 	Node startNode = relationship.getStartNode();
+			 	Node endNode = relationship.getEndNode();
+				
+			 	System.out.println("heur relationship from "+startNode.getProperty("name")+" to " + endNode.getProperty("name") +" "+relationship.getProperty("type"));
+				
+				String type = (String) relationship.getProperty("type");
+				
+				EnumConnectionType eType = EnumConnectionType.valueOf(type);
+				
+				
+				
+				return distance  ;
+			}
+		};
+		
+		
+		
+		PathFinder<WeightedPath> finder = GraphAlgoFactory.aStar(expander, lengthEvaluator, estimateEvaluator);
+		
+		
 
 		
 		//findExecutionEngine();
 		
 		
-		Result<Map<String, Object>> result = graphDatabase.queryEngine().query("match (n) where n.name='A' or n.name='D'   return n;", null);
+		Result<Map<String, Object>> result = graphDatabase.queryEngine().query("match (n) where n.name='A' or n.name='E'   return n;", null);
 		
-		Iterator it = result.iterator();
+		Iterator<Map<String, Object>> it = result.iterator();
 
 		
 		List<Node> nodes = new ArrayList<Node>();
 		
 		
 		while(it.hasNext()){
-			HashMap<String, Node> obj = (HashMap<String, Node>) it.next();
-			Node node = obj.get("n");
+			Map<String, Object> obj = (Map<String, Object>) it.next();
+			Node node = (Node) obj.get("n");
 			nodes.add(node);
 		}
 		
 		
 		Node nodeA = nodes.get(0);
 		Node nodeB = nodes.get(1);
+		
+		
 		WeightedPath path = finder.findSinglePath(nodeA, nodeB);
 		
 		
-		Iterable<Node> iter = path.nodes();
+		Iterable<Relationship> iter = path.relationships();
 		
-		for (Node node : iter) {
+		System.out.println("Custo total do caminho "+path.weight());
+		
+		for (Relationship rel: iter) {
 			
-			System.out.println(node.getProperty("name"));
+			Node startNode = rel.getStartNode(); 
+			Node endNode = rel.getEndNode();
+			
+			Double distance = (Double) rel.getProperty("distance");
+			
+			System.out.println("saindo de "+startNode.getProperty("name")+" ate "+endNode.getProperty("name")+ " distancia "+distance+"Km");
+			
 			
 		}
 	}
@@ -149,18 +203,7 @@ public class DesafioWalmartApplication extends Neo4jConfiguration implements Com
 			locationRepository.save(locationC);
 			locationRepository.save(locationD);
 			locationRepository.save(locationE);
-			/*
-	*/
-			/**
-			 * A B 10 
-			 * B D 15 
-			 * A C 20 
-			 * C D 30 
-			 * B E 50 
-			 * D E 30
-			 */
 
-			
 			/*
 			locationA = locationRepository.findByName(locationA.getName());
 			locationA.connectTo(locationB, 10f);
@@ -182,13 +225,20 @@ public class DesafioWalmartApplication extends Neo4jConfiguration implements Com
 			*/
 			
 			
-
+			/**
+			 * A B 10 
+			 * B D 15 
+			 * A C 20 
+			 * C D 30 
+			 * B E 50 
+			 * D E 30
+			 */
 			locationA.connectTo(locationB, 10f);
-			locationA.connectTo(locationC, 20f);
-			locationB.connectTo(locationD, 15f);
-			locationB.connectTo(locationE, 1f);
+			locationB.connectTo(locationD, 15f, EnumConnectionType.DIRT_ROAD);
+			locationA.connectTo(locationC, 20f, EnumConnectionType.FREEWAY);
 			locationC.connectTo(locationD, 30f);
-			locationD.connectTo(locationE, 1f);
+			locationB.connectTo(locationE, 50f);
+			locationD.connectTo(locationE, 30f);
 			
 			List col = CollectionUtils.arrayToList(new Location[]{
 					locationA,

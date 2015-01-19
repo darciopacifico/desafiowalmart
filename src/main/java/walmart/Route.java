@@ -16,9 +16,7 @@ public class Route {
 	Long id;
 
 	@RelationshipType
-	EnumConnectionType type;
-
-
+	EnumConnectionType type = EnumConnectionType.ROAD;
 
 	@GraphProperty
 	Float distance;
@@ -41,6 +39,12 @@ public class Route {
 		this.startLocation = startLocation;
 		this.endLocation = endLocation;
 		this.distance = distance;
+	}
+	
+
+	public Route(Location startLocation, Location endLocation, Float distance, EnumConnectionType type) {
+		this(startLocation, endLocation, distance);
+		this.type = type;
 	}
 
 
