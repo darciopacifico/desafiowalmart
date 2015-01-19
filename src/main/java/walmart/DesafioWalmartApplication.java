@@ -1,10 +1,14 @@
 package walmart;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.neo4j.cypher.javacompat.ExecutionEngine;
+import org.neo4j.cypher.javacompat.ExecutionResult;
 import org.neo4j.graphalgo.CommonEvaluators;
 import org.neo4j.graphalgo.CostEvaluator;
 import org.neo4j.graphalgo.GraphAlgoFactory;
@@ -12,8 +16,11 @@ import org.neo4j.graphalgo.PathFinder;
 import org.neo4j.graphalgo.WeightedPath;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.PathExpander;
+import org.neo4j.graphdb.PathExpanders;
 import org.neo4j.graphdb.RelationshipExpander;
+import org.neo4j.graphdb.ResourceIterator;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.kernel.Traversal;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +31,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.neo4j.config.EnableNeo4jRepositories;
 import org.springframework.data.neo4j.config.Neo4jConfiguration;
+import org.springframework.data.neo4j.conversion.Result;
 import org.springframework.data.neo4j.core.GraphDatabase;
 import org.springframework.data.neo4j.rest.SpringRestGraphDatabase;
 import org.springframework.util.CollectionUtils;
@@ -58,14 +66,75 @@ public class DesafioWalmartApplication extends Neo4jConfiguration implements Com
 
 	@Autowired
 	GraphDatabase graphDatabase;
-
 	
+	@Autowired
+	GraphDatabaseService db;
+	
+
+
+	private void shortestPathDijkstra() {
+		
+		System.out.println();
+		System.out.println("Menor caminho de A ate D");
+		
+		PathExpander<Object> expander = PathExpanders.forTypeAndDirection( EnumConnectionType.ROAD, Direction.BOTH );
+		
+		PathFinder<WeightedPath> finder = GraphAlgoFactory.dijkstra(expander, "distance");
+
+		
+		//findExecutionEngine();
+		
+		
+		Result<Map<String, Object>> result = graphDatabase.queryEngine().query("match (n) where n.name='A' or n.name='D'   return n;", null);
+		
+		Iterator it = result.iterator();
+
+		
+		List<Node> nodes = new ArrayList<Node>();
+		
+		
+		while(it.hasNext()){
+			HashMap<String, Node> obj = (HashMap<String, Node>) it.next();
+			Node node = obj.get("n");
+			nodes.add(node);
+		}
+		
+		
+		Node nodeA = nodes.get(0);
+		Node nodeB = nodes.get(1);
+		WeightedPath path = finder.findSinglePath(nodeA, nodeB);
+		
+		
+		Iterable<Node> iter = path.nodes();
+		
+		for (Node node : iter) {
+			
+			System.out.println(node.getProperty("name"));
+			
+		}
+	}
+
+	private void findExecutionEngine() {
+		ExecutionEngine engine = new ExecutionEngine( db );
+		
+		ExecutionResult result = engine.execute( "match (n {name:\"A\"}) return n;");
+		
+		ResourceIterator<Node> col = result.columnAs("n");
+		
+		while(col.hasNext()){
+			
+			Node node = col.next();
+			
+			System.out.println(node);
+			
+		}
+	}
 	
   
 	public void run(String... args) throws Exception {
 
 		
-		//zeraBanco();
+		zeraBanco();
 
 		Location locationA = new Location("A");
 		Location locationB = new Location("B");
@@ -117,9 +186,9 @@ public class DesafioWalmartApplication extends Neo4jConfiguration implements Com
 			locationA.connectTo(locationB, 10f);
 			locationA.connectTo(locationC, 20f);
 			locationB.connectTo(locationD, 15f);
-			locationB.connectTo(locationE, 50f);
+			locationB.connectTo(locationE, 1f);
 			locationC.connectTo(locationD, 30f);
-			locationD.connectTo(locationE, 30f);
+			locationD.connectTo(locationE, 1f);
 			
 			List col = CollectionUtils.arrayToList(new Location[]{
 					locationA,
@@ -171,6 +240,10 @@ public class DesafioWalmartApplication extends Neo4jConfiguration implements Com
 		} finally {
 			tx.close();
 		}
+		
+		
+		
+		shortestPathDijkstra();
 
 	}
 
