@@ -8,8 +8,11 @@ import org.springframework.data.neo4j.annotation.RelationshipEntity;
 import org.springframework.data.neo4j.annotation.RelationshipType;
 import org.springframework.data.neo4j.annotation.StartNode;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+
 
 @RelationshipEntity(type="ROAD")
+@JsonSerialize
 public class Route {
 	
 	@GraphId

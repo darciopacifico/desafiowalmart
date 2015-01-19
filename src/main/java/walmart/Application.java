@@ -1,56 +1,53 @@
 package walmart;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
-import org.neo4j.cypher.javacompat.ExecutionEngine;
-import org.neo4j.cypher.javacompat.ExecutionResult;
-import org.neo4j.graphalgo.CommonEvaluators;
-import org.neo4j.graphalgo.CostEvaluator;
-import org.neo4j.graphalgo.EstimateEvaluator;
-import org.neo4j.graphalgo.GraphAlgoFactory;
-import org.neo4j.graphalgo.PathFinder;
-import org.neo4j.graphalgo.WeightedPath;
-import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
-import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.PathExpander;
-import org.neo4j.graphdb.PathExpanders;
-import org.neo4j.graphdb.Relationship;
-import org.neo4j.graphdb.RelationshipExpander;
-import org.neo4j.graphdb.ResourceIterator;
 import org.neo4j.graphdb.Transaction;
-import org.neo4j.kernel.Traversal;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.context.embedded.EmbeddedServletContainerFactory;
+import org.springframework.boot.context.embedded.tomcat.TomcatEmbeddedServletContainerFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.neo4j.config.EnableNeo4jRepositories;
 import org.springframework.data.neo4j.config.Neo4jConfiguration;
-import org.springframework.data.neo4j.conversion.Result;
 import org.springframework.data.neo4j.core.GraphDatabase;
 import org.springframework.data.neo4j.rest.SpringRestGraphDatabase;
 import org.springframework.util.CollectionUtils;
 
 @Configuration
+@EnableAutoConfiguration
 @EnableNeo4jRepositories(basePackages = "walmart")
-public class DesafioWalmartApplication extends Neo4jConfiguration implements CommandLineRunner {
+public class Application extends Neo4jConfiguration implements CommandLineRunner {
 
 	
 	@Autowired
 	private ApplicationContext applicationContext;
 	
 	
-	public DesafioWalmartApplication() {
+	public Application() {
 		setBasePackage("walmart");
 	}
 
+	
+	@Bean
+	public EmbeddedServletContainerFactory servletContainer() {
+	    TomcatEmbeddedServletContainerFactory factory = new TomcatEmbeddedServletContainerFactory();
+	    factory.setPort(8081);
+	    factory.setSessionTimeout(5, TimeUnit.MINUTES);
+	    //factory.addErrorPages(new ErrorPage(HttpStatus.404, "/notfound.html");
+
+	    return factory;
+	}
+	
 	@Bean
 	public GraphDatabaseService graphDatabaseService() {
 
@@ -68,128 +65,19 @@ public class DesafioWalmartApplication extends Neo4jConfiguration implements Com
 
 	@Autowired
 	GraphDatabase graphDatabase;
-	
-	@Autowired
-	GraphDatabaseService db;
-	
 
-
-	private void shortestPathDijkstra() {
-		
-		System.out.println();
-		System.out.println("Menor caminho ");
-		
-		PathExpander<Object> expander = PathExpanders.allTypesAndDirections();
-		
-		
-		//PathFinder<WeightedPath> finder = GraphAlgoFactory.dijkstra(expander, "distance");
-		
-		
-		EstimateEvaluator<Double> estimateEvaluator = new EstimateEvaluator<Double>() {
-			@Override
-			public Double getCost(Node arg0, Node arg1) {
-				
-				System.out.println("heur: " + arg0.getProperty("name") +" " +arg1.getProperty("name"));
-				
-				return 10d;
-			}
-		};
-		
-		
-		CostEvaluator<Double> lengthEvaluator =  new CostEvaluator<Double>() {
-			
-			public Double getCost(Relationship relationship, Direction direction) {
-				
-				//STREET, ROAD, FREEWAY, FERRY, DIRT_ROAD, BRIDGE; 
-				
-				Double distance = (Double) relationship.getProperty("distance");
-				
-			 	Node startNode = relationship.getStartNode();
-			 	Node endNode = relationship.getEndNode();
-				
-			 	System.out.println("heur relationship from "+startNode.getProperty("name")+" to " + endNode.getProperty("name") +" "+relationship.getProperty("type"));
-				
-				String type = (String) relationship.getProperty("type");
-				
-				EnumConnectionType eType = EnumConnectionType.valueOf(type);
-				
-				
-				
-				return distance  ;
-			}
-		};
-		
-		
-		
-		PathFinder<WeightedPath> finder = GraphAlgoFactory.aStar(expander, lengthEvaluator, estimateEvaluator);
-		
-		
-
-		
-		//findExecutionEngine();
-		
-		
-		Result<Map<String, Object>> result = graphDatabase.queryEngine().query("match (n) where n.name='A' or n.name='E'   return n;", null);
-		
-		Iterator<Map<String, Object>> it = result.iterator();
-
-		
-		List<Node> nodes = new ArrayList<Node>();
-		
-		
-		while(it.hasNext()){
-			Map<String, Object> obj = (Map<String, Object>) it.next();
-			Node node = (Node) obj.get("n");
-			nodes.add(node);
-		}
-		
-		
-		Node nodeA = nodes.get(0);
-		Node nodeB = nodes.get(1);
-		
-		
-		WeightedPath path = finder.findSinglePath(nodeA, nodeB);
-		
-		
-		Iterable<Relationship> iter = path.relationships();
-		
-		System.out.println("Custo total do caminho "+path.weight());
-		
-		for (Relationship rel: iter) {
-			
-			Node startNode = rel.getStartNode(); 
-			Node endNode = rel.getEndNode();
-			
-			Double distance = (Double) rel.getProperty("distance");
-			
-			System.out.println("saindo de "+startNode.getProperty("name")+" ate "+endNode.getProperty("name")+ " distancia "+distance+"Km");
-			
-			
-		}
-	}
-
-	private void findExecutionEngine() {
-		ExecutionEngine engine = new ExecutionEngine( db );
-		
-		ExecutionResult result = engine.execute( "match (n {name:\"A\"}) return n;");
-		
-		ResourceIterator<Node> col = result.columnAs("n");
-		
-		while(col.hasNext()){
-			
-			Node node = col.next();
-			
-			System.out.println(node);
-			
-		}
-	}
-	
   
 	public void run(String... args) throws Exception {
 
 		
-		zeraBanco();
+		//zeraBanco();
 
+		//carregaBanco();
+
+	}
+
+
+	private void carregaBanco() {
 		Location locationA = new Location("A");
 		Location locationB = new Location("B");
 		Location locationC = new Location("C");
@@ -203,7 +91,18 @@ public class DesafioWalmartApplication extends Neo4jConfiguration implements Com
 			locationRepository.save(locationC);
 			locationRepository.save(locationD);
 			locationRepository.save(locationE);
+			/*
+	*/
+			/**
+			 * A B 10 
+			 * B D 15 
+			 * A C 20 
+			 * C D 30 
+			 * B E 50 
+			 * D E 30
+			 */
 
+			
 			/*
 			locationA = locationRepository.findByName(locationA.getName());
 			locationA.connectTo(locationB, 10f);
@@ -225,19 +124,12 @@ public class DesafioWalmartApplication extends Neo4jConfiguration implements Com
 			*/
 			
 			
-			/**
-			 * A B 10 
-			 * B D 15 
-			 * A C 20 
-			 * C D 30 
-			 * B E 50 
-			 * D E 30
-			 */
+
 			locationA.connectTo(locationB, 10f);
-			locationB.connectTo(locationD, 15f, EnumConnectionType.DIRT_ROAD);
-			locationA.connectTo(locationC, 20f, EnumConnectionType.FREEWAY);
-			locationC.connectTo(locationD, 30f);
+			locationA.connectTo(locationC, 20f);
+			locationB.connectTo(locationD, 15f);
 			locationB.connectTo(locationE, 50f);
+			locationC.connectTo(locationD, 30f);
 			locationD.connectTo(locationE, 30f);
 			
 			List col = CollectionUtils.arrayToList(new Location[]{
@@ -290,11 +182,6 @@ public class DesafioWalmartApplication extends Neo4jConfiguration implements Com
 		} finally {
 			tx.close();
 		}
-		
-		
-		
-		shortestPathDijkstra();
-
 	}
 
 	private void zeraBanco() {
@@ -318,6 +205,6 @@ public class DesafioWalmartApplication extends Neo4jConfiguration implements Com
 	public static void main(String[] args) throws Exception {
 
 		// FileUtils.deleteRecursively(new File("desafiowalmart.db"));
-		SpringApplication.run(DesafioWalmartApplication.class, args);
+		SpringApplication.run(Application.class, args);
 	}
 }

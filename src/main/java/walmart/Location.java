@@ -10,11 +10,14 @@ import org.springframework.data.neo4j.annotation.NodeEntity;
 import org.springframework.data.neo4j.annotation.RelatedTo;
 import org.springframework.data.neo4j.annotation.RelatedToVia;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+
 /**
  * 
  * @author darcio
  */
 @NodeEntity
+@JsonSerialize
 public class Location {
 
 	@GraphId
