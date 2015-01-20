@@ -181,7 +181,7 @@ public class ShortestpathController {
 			throw new WalmartRuntimeException("Erro ao tentar recuperar malha!",e);
 			
 		} finally {
-			tx.close();
+			tx.close(); 
 		}
 
 		// TODO: REVISAR!
