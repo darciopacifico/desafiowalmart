@@ -3,6 +3,7 @@ package br.com.walmart.vo;
 import java.io.Serializable;
 
 import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
@@ -59,6 +60,9 @@ public class CaminhoMalha implements Serializable {
 	}
 
 
+	/**
+	 * Testes basicos + Teste se todos os atributos do caminho são iguais
+	 */
 	@Override
 	public boolean equals(Object o) {
 		
@@ -73,6 +77,17 @@ public class CaminhoMalha implements Serializable {
 		
 		return EqualsBuilder.reflectionEquals(this, caminho);
 
+	}
+	
+
+	/**
+	 * Considera no hash todos os atributos
+	 */
+	@Override
+	public int hashCode() {
+		
+		return new HashCodeBuilder(5673,46465).append(this.startLocation).append(this.endLocation).append(this.distance).hashCode();
+		
 	}
 	
 	

@@ -4,6 +4,10 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.lang.builder.HashCodeBuilder;
+
+import bsh.This;
+
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 /**
@@ -40,6 +44,9 @@ public class MalhaViaria implements Serializable {
 		this.caminhos = caminhos;
 	}
 
+	/**
+	 * Considera no equals apenas o nome do mapa
+	 */
 	@Override
 	public boolean equals(Object o) {
 		
@@ -54,4 +61,17 @@ public class MalhaViaria implements Serializable {
 		return this.nomeMapa.equals(malhaViaria.nomeMapa);
 	}
 
+	
+	
+	/**
+	 * Considera no hash apenas o nome do mapa
+	 */
+	@Override
+	public int hashCode() {
+		
+		return new HashCodeBuilder(89687,6545).append(this.nomeMapa).hashCode();
+		
+	}
+	
+	
 }
