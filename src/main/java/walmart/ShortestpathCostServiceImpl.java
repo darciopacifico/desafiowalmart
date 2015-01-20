@@ -1,0 +1,173 @@
+package walmart;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
+import org.neo4j.graphalgo.GraphAlgoFactory;
+import org.neo4j.graphalgo.PathFinder;
+import org.neo4j.graphalgo.WeightedPath;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.PathExpander;
+import org.neo4j.graphdb.PathExpanders;
+import org.neo4j.graphdb.Relationship;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.neo4j.conversion.Result;
+import org.springframework.data.neo4j.core.GraphDatabase;
+import org.springframework.stereotype.Component;
+
+
+/**
+ * Implementacao padrao do servico de calculo de custo do menor caminho.
+ * 
+ * Implementação baseada no algoritmo Dijkstra, utilizando implementação do Neo4j 
+ * 
+ * 
+ * @author darcio
+ *
+ */
+@Component
+public class ShortestpathCostServiceImpl implements ShortestpathCostService {
+	
+	private static final String NAME_ATTRIBUTE = "name";
+
+	protected static final String WEIGHTED_ATTRIBUTE = "distance";
+	
+	@Autowired
+	private GraphDatabase graphDatabase;
+	
+	
+	/**
+	 * Verifica o menor caminho entre dois pontos dados e calcula os gastos da viagem com combustivel
+	 * @param autonomia
+	 * @param valorCombustivel
+	 * @param locationA
+	 * @param locationB
+	 * @return
+	 * @throws WalmartException 
+	 */
+	public PathCost shortestpathCost(String nomeMapa, Float autonomia, Float valorCombustivel, String locationA, String locationB) throws WalmartException {
+
+		//busca os dois nós informados.
+		List<Node> nodes = findNodes(locationA, locationB);
+		Node nodeA = nodes.get(0);
+		Node nodeB = nodes.get(1);
+
+		
+		//não haverá distinção de tipo de estrada ou direção do relacionamento
+		PathExpander<Object> expander = PathExpanders.allTypesAndDirections();
+		
+		
+		
+		//cria-se um pathFinder com algoritmo de Dijkstra, ponderado pelo atributo "distance"
+		PathFinder<WeightedPath> finder = GraphAlgoFactory.dijkstra(expander, WEIGHTED_ATTRIBUTE);
+		
+		//executa a busca pelo menor caminho
+		WeightedPath path = finder.findSinglePath(nodeA, nodeB);
+		
+		//trata caminho nao encontrado
+		if(path==null){
+			throw new WalmartException("Nao ha caminho conhecido entre os pontos informados!");
+		}
+		
+		//calcula custo em funcao de autonomia do veículo e preco do combustivel informados
+		PathCost pathCost = calculaCustoTotal(autonomia, valorCombustivel, path);
+		
+		return pathCost;
+	}
+
+
+	/**
+	 * Calcula valor da viagem e retorna toda a informacao num novo WeightedPath
+	 * @param autonomia
+	 * @param valorCombustivel
+	 * @param weightedPath
+	 * @return
+	 */
+	private PathCost calculaCustoTotal(Float autonomia, Float valorCombustivel, WeightedPath weightedPath) {
+		
+		PathCost pathCost = new PathCost();
+		
+		//copia o caminho de WeightedPath para o bean PathCost
+		copyPath(weightedPath, pathCost);
+
+		//calcula custo total
+		Double kms = weightedPath.weight();
+		Double custoTotal = (kms/autonomia)*valorCombustivel;
+		pathCost.setTotalCost(custoTotal);
+		
+		
+		return pathCost;
+	}
+	
+	
+	/**
+	 * Copia os registros de relationship para registros de path 
+	 * @param fromPath
+	 * @param toPathCost
+	 */
+	private void copyPath(WeightedPath fromPath, PathCost toPathCost) {
+		Iterable<Relationship> relationships = fromPath.relationships();
+		
+		for (Relationship relationship : relationships) {
+			
+			WalmartPath walmartPath = new WalmartPath();
+			
+			walmartPath.setStartLocation((String)	relationship.getStartNode().getProperty(NAME_ATTRIBUTE));
+			walmartPath.setEndLocation((String)		relationship.getEndNode().getProperty(NAME_ATTRIBUTE));
+			walmartPath.setDistance((Double) 		relationship.getProperty(WEIGHTED_ATTRIBUTE));
+			
+			toPathCost.getPath().add(walmartPath);
+			
+		}
+	}
+	
+	
+	/**
+	 * Busca os dois nós informados. Lança RuntimeException, caso um dos nós não seja encontrado.
+	 * @param locationA
+	 * @param locationB
+	 * @return
+	 */
+	private List<Node> findNodes(String locationA, String locationB) {
+
+		Map<String, Object> mapParam = new HashMap<String, Object>();
+		
+		mapParam.put("nameA", locationA);
+		mapParam.put("nameB", locationB);
+		
+		
+		//TODO: Externalizar query
+		Result<Map<String, Object>> result = graphDatabase.queryEngine().query("match (n) where n.name={nameA} or n.name={nameB} return DISTINCT n;", mapParam);
+		
+		List<Node> nodes = resultToList(result);
+		
+		//checa registros retornados
+		if(nodes.size()!=2){
+			throw new WalmartRuntimeException("Dois e apenas dois nos deveriam ter sido encontrados para o calculo do menor caminho! ("+nodes+") ");
+		}
+		
+		return nodes;
+	}
+
+	
+	/**
+	 * Transfere resultados para uma Lista.
+	 * @param result
+	 * @return
+	 */
+	private List<Node> resultToList(Result<Map<String, Object>> result) {
+		Iterator<Map<String, Object>> it = result.iterator();
+		
+		List<Node> nodes = new ArrayList<Node>();
+		
+		while(it.hasNext()){
+			Map<String, Object> obj = (Map<String, Object>) it.next();
+			Node node = (Node) obj.get("n");
+			nodes.add(node);
+		}
+		return nodes;
+	}
+}
