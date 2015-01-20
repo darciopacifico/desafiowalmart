@@ -33,4 +33,6 @@ Com cliente REST:
 	- Executar a classe "br.com.walmart.Application", como uma  Java Application padrão. Os servidores Tomcat e Neo4J
 	server foram configurados em modo embedded. Não é necessário nenhuma preparação destes ambientes.
 	
+	- Pode-se utilizar o comando "mvn exec:java"
+	
 	- Os scripts de teste estão disponíveis em formato postman, no arquivo "postman_dump.txt"
