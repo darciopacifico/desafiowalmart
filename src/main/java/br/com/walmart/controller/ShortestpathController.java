@@ -180,6 +180,8 @@ public class ShortestpathController {
 			tx.failure();
 			throw new WalmartRuntimeException("Erro ao tentar recuperar malha!",e);
 			
+		} finally {
+			tx.close();
 		}
 
 		// TODO: REVISAR!
@@ -248,7 +250,7 @@ public class ShortestpathController {
 			tx.success();
 
 		} catch (Exception e) {
-
+			tx.failure();
 			LOGGER.error("Erro ao tentar criar malha viaria!",e);
 			
 			throw new WalmartRuntimeException("Erro ao tentar criar malha viária!", e);
@@ -304,6 +306,8 @@ public class ShortestpathController {
 			tx.failure();
 			LOGGER.error("Erro ao tentar excluir malha!",e);
 			throw new WalmartRuntimeException("Erro ao tentar excluir malha!",e);
+		} finally {
+			tx.close();
 		}
 
 		
