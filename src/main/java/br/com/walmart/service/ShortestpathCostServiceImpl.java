@@ -39,7 +39,7 @@ import br.com.walmart.vo.PathCost;
 @Component
 public class ShortestpathCostServiceImpl implements ShortestpathCostService {
 
-	private static Logger LOGGER = LoggerFactory.getLogger(ShortestpathCostServiceImpl.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(ShortestpathCostServiceImpl.class);
 	
 	private static final String NAME_ATTRIBUTE = "name";
 

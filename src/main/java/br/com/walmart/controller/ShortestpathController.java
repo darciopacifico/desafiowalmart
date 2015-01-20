@@ -58,7 +58,7 @@ import br.com.walmart.vo.PathCost;
 @RequestMapping("/shortestpath")
 public class ShortestpathController {
 
-	private static Logger LOGGER = LoggerFactory.getLogger(ShortestpathController.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(ShortestpathController.class);
 	
 	@Autowired
 	private ShortestpathCostService spp;

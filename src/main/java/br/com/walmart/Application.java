@@ -31,7 +31,7 @@ import br.com.walmart.exception.WalmartRuntimeException;
 public class Application extends Neo4jConfiguration {
 
 	private static final String DESAFIO_WALMART_DB = "desafioWalmart.db";
-	private static Logger LOGGER = LoggerFactory.getLogger(Application.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(Application.class);
 	
 	
 	
