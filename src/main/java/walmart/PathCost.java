@@ -1,27 +1,22 @@
 package walmart;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
-
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 /**
- * Abstrai o cami
+ * Abstrai a informaçao de caminho e custo.
+ * 
+ * Especialização de malha viária, contento a representação do melhor caminho entre dois pontos e seu custo.
+ *  
  * @author darcio
  *
  */
 @JsonSerialize
-public class PathCost implements Serializable {
+public class PathCost extends MalhaViaria{
 
 	private static final long serialVersionUID = -2013939523835956254L;
-
 	
 	private Double totalCost;
 
-	private List<WalmartPath> path = new ArrayList<>(10);
-
-	
 	public Double getTotalCost() {
 		return totalCost;
 	}
@@ -30,16 +25,4 @@ public class PathCost implements Serializable {
 		this.totalCost = totalWeight;
 	}
 
-	public List<WalmartPath> getPath() {
-		return path;
-	}
-
-	public void setPath(List<WalmartPath> path) {
-		this.path = path;
-	}
-
-	
-	
-	
-	
 }

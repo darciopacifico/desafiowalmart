@@ -30,7 +30,6 @@ import org.neo4j.graphdb.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.neo4j.conversion.Result;
 import org.springframework.data.neo4j.core.GraphDatabase;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -38,7 +37,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.ResponseStatus;
 
 /**
  * Controller REST para exposição do serviço de cálculo de custo do menor caminho
@@ -52,9 +50,11 @@ public class ShortestpathController {
 	@Autowired
 	private ShortestpathCostService spp;
 
+	
 	@Autowired
 	private LocationRepository locationRepository;
 
+	
 	@Autowired
 	private GraphDatabase graphDatabase;
 
@@ -101,11 +101,9 @@ public class ShortestpathController {
 			setMapas.add(map.get("n.mapa")+"");
 			
 		}
-		
 		return setMapas;
 		
 	}
-	
 	
 
 	
@@ -116,7 +114,6 @@ public class ShortestpathController {
 	@RequestMapping(value = { "/malhaviaria/{mapa}" }, method = RequestMethod.GET)
 	@ResponseBody
 	public MalhaViaria getMalha(@PathVariable String mapa){
-		
 		
 		MalhaViaria malhaViaria = new MalhaViaria();
 		
@@ -147,25 +144,19 @@ public class ShortestpathController {
 			
 		}
 		
-		
 		//TODO: REVISAR!
 		if(malhaViaria.getNomeMapa()!=null){
 			return malhaViaria;
-			
 		}else{
-
 			return null;
 		}
-		
-		
-		
 	}
-	
-	
 	
 	
 	/**
 	 * Recebe requisicao REST e invoca serviço shortestpathCost
+	 * 
+	 * TODO: a criação do mapa está muito lenta!! Revisar processo
 	 * 
 	 * @param name
 	 * @return
@@ -173,7 +164,7 @@ public class ShortestpathController {
 	 */
 	@RequestMapping(value = "/malhaviaria", consumes = "application/json", method = RequestMethod.PUT)
 	@ResponseBody
-	public void inserirMalhaViaria( @RequestBody(required = true) MalhaViaria malhaViaria) throws WalmartException {
+	public void criaMalhaViaria( @RequestBody(required = true) MalhaViaria malhaViaria) throws WalmartException {
 
 		/**
 		TODO: Construi o servico de criacao de malha de forma bem simples. Creio que não seria admissível manter esta transacao aberta por tanto tempo.
@@ -181,9 +172,12 @@ public class ShortestpathController {
 		TODO: Esta opcao batch nao poderia concorrer com outras transacoes online. A carga de grandes volumes de dados deve ser feita offline, por um DBA. 
 		 **/
 		Transaction tx = graphDatabase.beginTx();
-
+		
 		String nomeMapa = malhaViaria.getNomeMapa();
 
+		//checa se já existe uma malha com o mesmo nome. Lança exceção, caso exista
+		checkNameAvailability(nomeMapa);
+		
 		List<CaminhoMalha> caminhos = malhaViaria.getCaminhos();
 
 		try {
@@ -196,18 +190,34 @@ public class ShortestpathController {
 				Location endLocation = mergeLocation(nameEndLocation, nomeMapa);
 
 				startLocation.connectTo(endLocation, caminhoMalha.getDistance());
-
 				locationRepository.save(startLocation);
-
-				tx.success();
 			}
+
+			tx.success();
+			
+		} catch (Exception e) {
+			
+			throw new WalmartRuntimeException("Erro ao tentar criar malha viária!",e);
+			
 		} finally {
 			tx.close();
 		}
 
 	}
 
-	
+
+	/**
+	 * Verifica se já existe uma malha com o mesmo nome.
+	 * @param nomeMapa
+	 * @throws WalmartException Caso já exista uma malha com este nome.
+	 */
+	protected void checkNameAvailability(String nomeMapa) throws WalmartException {
+		MalhaViaria malhaAtual = getMalha(nomeMapa);
+		
+		if (malhaAtual!=null){
+			throw new WalmartException("Já existe uma malha viária com o nome '"+nomeMapa+"'! Para alteração a malha deve ser recriada!"); 
+		}
+	}
 
 	
 	/**

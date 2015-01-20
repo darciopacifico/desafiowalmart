@@ -7,7 +7,11 @@ import java.util.List;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 /**
- * bean representando uma malha viaria
+ * Bean representando uma malha viaria do sistema.
+ * 
+ * Contém o nome do mapa, suas arestas e vértices.
+ * 
+ * O bean {@link #CaminhoMalha} contém as distâncias entre os vértices da malha.
  *
  * @author darcio
  */
@@ -20,8 +24,7 @@ public class MalhaViaria implements Serializable{
 	
 	private List<CaminhoMalha> caminhos=new ArrayList<CaminhoMalha>(20);
 
-	
-	
+
 	public String getNomeMapa() {
 		return nomeMapa;
 	}

@@ -10,7 +10,11 @@ import org.springframework.data.neo4j.annotation.StartNode;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
-
+/**
+ * Representa uma aresta do grafo. Este bean será persistido no Neo4J.
+ * 
+ * @author darcio
+ */
 @RelationshipEntity(type="ROAD")
 @JsonSerialize
 public class Route {

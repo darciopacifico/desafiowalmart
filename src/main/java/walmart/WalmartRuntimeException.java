@@ -2,7 +2,7 @@ package walmart;
 
 
 /**
- * Erro runtime do projeto 
+ * Erro runtime do projeto. Representa um erro que não é passível de tratamento. Não deve ser esperado pelos componentes clientes.
  * 
  * @author darcio
  *

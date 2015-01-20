@@ -82,7 +82,7 @@ public class ShortestpathCostServiceImpl implements ShortestpathCostService {
 				throw new WalmartException("Nao ha caminho conhecido entre os pontos informados!");
 			}
 			
-			pathCost = calculaCustoTotal(autonomia, valorCombustivel, path);
+			pathCost = calculaCustoTotal(nomeMapa, autonomia, valorCombustivel, path);
 			
 			tx.success();
 			
@@ -102,14 +102,18 @@ public class ShortestpathCostServiceImpl implements ShortestpathCostService {
 
 	/**
 	 * Calcula valor da viagem e retorna toda a informacao num novo WeightedPath
+	 * @param nomeMapa 
 	 * @param autonomia
 	 * @param valorCombustivel
 	 * @param weightedPath
 	 * @return
 	 */
-	private PathCost calculaCustoTotal(Float autonomia, Float valorCombustivel, WeightedPath weightedPath) {
+	private PathCost calculaCustoTotal(String nomeMapa, Float autonomia, Float valorCombustivel, WeightedPath weightedPath) {
 		
 		PathCost pathCost = new PathCost();
+		
+		//set nome do mapa
+		pathCost.setNomeMapa(nomeMapa);
 		
 		//copia o caminho de WeightedPath para o bean PathCost
 		copyPath(weightedPath, pathCost);
@@ -134,13 +138,13 @@ public class ShortestpathCostServiceImpl implements ShortestpathCostService {
 		
 		for (Relationship relationship : relationships) {
 			
-			WalmartPath walmartPath = new WalmartPath();
+			CaminhoMalha caminhoMalha = new CaminhoMalha();
 			
-			walmartPath.setStartLocation((String)	relationship.getStartNode().getProperty(NAME_ATTRIBUTE));
-			walmartPath.setEndLocation((String)		relationship.getEndNode().getProperty(NAME_ATTRIBUTE));
-			walmartPath.setDistance((Double) 		relationship.getProperty(WEIGHTED_ATTRIBUTE));
+			caminhoMalha.setStartLocation((String)	relationship.getStartNode().getProperty(NAME_ATTRIBUTE));
+			caminhoMalha.setEndLocation((String)		relationship.getEndNode().getProperty(NAME_ATTRIBUTE));
+			caminhoMalha.setDistance((Double) 		relationship.getProperty(WEIGHTED_ATTRIBUTE));
 			
-			toPathCost.getPath().add(walmartPath);
+			toPathCost.getCaminhos().add(caminhoMalha);
 			
 		}
 	}

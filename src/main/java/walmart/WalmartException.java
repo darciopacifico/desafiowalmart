@@ -1,7 +1,7 @@
 package walmart;
 
 /**
- * Erro de checked do projeto
+ * Erro de checked do projeto. Representa exceções que devem ser esperadas pelo componente cliente e, possivelmente, tratadas.
  * @author darcio
  *
  */

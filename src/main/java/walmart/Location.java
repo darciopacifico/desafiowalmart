@@ -11,6 +11,12 @@ import org.springframework.data.neo4j.annotation.RelatedToVia;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 /**
+ * Representa um vértice, ou local do mapa, nas malhas viárias.
+ * 
+ * O Atributo mapa, diferencia as diferentes malhas viárias contidas no sistema.
+ * 
+ * TODO: REVISAR SE ESTA É A MELHOR MANEIRA DE SEPARAR OS MAPAS. Achei interessante manter assim, para futuramente conectar os mapas, 
+ * determinar por quais cidades o melhor caminho passará.
  * 
  * @author darcio
  */
@@ -67,7 +73,16 @@ public class Location {
 		return route;
 		
 	}
-
+	
+	/**
+	 * 
+	 * @return
+	 */
+	public String getMapa() {
+		return mapa;
+	}
+	
+	
 	public Long getId() {
 		return id;
 	}
@@ -92,9 +107,6 @@ public class Location {
 		this.connections = connections;
 	}
 
-	public String getMapa() {
-		return mapa;
-	}
 
 	public void setMapa(String mapa) {
 		this.mapa = mapa;
