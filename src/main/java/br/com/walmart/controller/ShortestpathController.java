@@ -291,9 +291,24 @@ public class ShortestpathController {
 
 		mapParam.put("mapa", mapa);
 
-		// TODO: Externalizar queries
-		graphDatabase.queryEngine().query("MATCH (n {mapa:{mapa}})-[r]-() DELETE n, r", mapParam);
+		
+		Transaction tx = graphDatabase.beginTx();
+		
+		
+		try {
+			// TODO: Externalizar queries
+			graphDatabase.queryEngine().query("MATCH (n {mapa:{mapa}})-[r]-() DELETE n, r", mapParam);
+			
+			tx.success();
+		} catch (Exception e) {
+			tx.failure();
+			LOGGER.error("Erro ao tentar excluir malha!",e);
+			throw new WalmartRuntimeException("Erro ao tentar excluir malha!",e);
+		}
 
+		
+		
+		
 	}
 
 	/**
