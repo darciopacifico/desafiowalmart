@@ -3,11 +3,9 @@ package walmart;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.neo4j.graphdb.Direction;
 import org.springframework.data.neo4j.annotation.Fetch;
 import org.springframework.data.neo4j.annotation.GraphId;
 import org.springframework.data.neo4j.annotation.NodeEntity;
-import org.springframework.data.neo4j.annotation.RelatedTo;
 import org.springframework.data.neo4j.annotation.RelatedToVia;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -24,7 +22,10 @@ public class Location {
 	private Long id;
 
 	private String name;
+	
+	private String mapa;
 
+	
 	public Location() {
 	}
 
@@ -44,7 +45,7 @@ public class Location {
 	 * @param connectionType
 	 * @return
 	 */
-	public Route connectTo(Location otherLoc, Float distance) {
+	public Route connectTo(Location otherLoc, Double distance) {
 		Route route = new Route(this,otherLoc, distance);
 		this.connections.add(route);
 		return route;
@@ -57,7 +58,7 @@ public class Location {
 	 * @param connectionType
 	 * @return
 	 */
-	public Route connectTo(Location otherLoc, Float distance, EnumConnectionType type) {
+	public Route connectTo(Location otherLoc, Double distance, EnumConnectionType type) {
 		
 		Route route = connectTo(otherLoc, distance);
 		
@@ -89,6 +90,14 @@ public class Location {
 
 	public void setConnections(Set<Route> connections) {
 		this.connections = connections;
+	}
+
+	public String getMapa() {
+		return mapa;
+	}
+
+	public void setMapa(String mapa) {
+		this.mapa = mapa;
 	}
 
 }

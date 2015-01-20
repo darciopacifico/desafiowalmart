@@ -22,7 +22,7 @@ public class Route {
 	EnumConnectionType type = EnumConnectionType.ROAD;
 
 	@GraphProperty
-	Float distance;
+	Double distance=0d;
 	
 	@StartNode
 	@Fetch
@@ -37,7 +37,7 @@ public class Route {
 	}
 	
 
-	public Route(Location startLocation, Location endLocation, Float distance) {
+	public Route(Location startLocation, Location endLocation, Double distance) {
 		super();
 		this.startLocation = startLocation;
 		this.endLocation = endLocation;
@@ -45,7 +45,7 @@ public class Route {
 	}
 	
 
-	public Route(Location startLocation, Location endLocation, Float distance, EnumConnectionType type) {
+	public Route(Location startLocation, Location endLocation, Double distance, EnumConnectionType type) {
 		this(startLocation, endLocation, distance);
 		this.type = type;
 	}
@@ -71,12 +71,12 @@ public class Route {
 	}
 
 
-	public Float getDistance() {
+	public Double getDistance() {
 		return distance;
 	}
 
 
-	public void setDistance(Float distance) {
+	public void setDistance(Double distance) {
 		this.distance = distance;
 	}
 	
