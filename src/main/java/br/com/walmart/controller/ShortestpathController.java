@@ -58,7 +58,7 @@ import br.com.walmart.vo.PathCost;
 @RequestMapping("/shortestpath")
 public class ShortestpathController {
 
-	private static Logger logger = LoggerFactory.getLogger(ShortestpathController.class);
+	private static Logger LOGGER = LoggerFactory.getLogger(ShortestpathController.class);
 	
 	@Autowired
 	private ShortestpathCostService spp;
@@ -81,8 +81,8 @@ public class ShortestpathController {
 	public PathCost shortestpath(@RequestParam(required = true) String nomeMapa, @RequestParam(required = true) Float autonomia, @RequestParam(required = true) Float valorcombustivel, @RequestParam(required = true) String locala, @RequestParam(required = true) String localb)
 			throws WalmartException {
 
-  	if(logger.isDebugEnabled()){
-  		logger.debug("Invocando servico para calculo de menor caminho! nomeMapa {}, autonomia {}, valorcombustivel {}, locala {}, localb {} ", nomeMapa, autonomia, valorcombustivel, locala, localb);
+  	if(LOGGER.isDebugEnabled()){
+  		LOGGER.debug("Invocando servico para calculo de menor caminho! nomeMapa {}, autonomia {}, valorcombustivel {}, locala {}, localb {} ", nomeMapa, autonomia, valorcombustivel, locala, localb);
   	}
 		
 		// invoca servico shortestpathCost
@@ -101,8 +101,8 @@ public class ShortestpathController {
 	public Set<String> getMalhas() {
 
 
-  	if(logger.isDebugEnabled()){
-  		logger.debug("recuperando os nomes das malhas contidas no sistema");
+  	if(LOGGER.isDebugEnabled()){
+  		LOGGER.debug("recuperando os nomes das malhas contidas no sistema");
   	}
 		
 		
@@ -135,8 +135,8 @@ public class ShortestpathController {
 
 		
 
-  	if(logger.isDebugEnabled()){
-  		logger.debug("Recuperando dados da malha {}", mapa);
+  	if(LOGGER.isDebugEnabled()){
+  		LOGGER.debug("Recuperando dados da malha {}", mapa);
   	}
 		
 		Transaction tx = graphDatabase.beginTx();
@@ -174,8 +174,8 @@ public class ShortestpathController {
 			
 		} catch (Exception e) {
 
-			logger.error("Erro ao tentar recuperar malha!",e);
-			logger.error("Erro ao tentar recuperar a malha {}", mapa);
+			LOGGER.error("Erro ao tentar recuperar malha!",e);
+			LOGGER.error("Erro ao tentar recuperar a malha {}", mapa);
 			
 			tx.failure();
 			throw new WalmartRuntimeException("Erro ao tentar recuperar malha!",e);
@@ -188,7 +188,7 @@ public class ShortestpathController {
 
 		} else {
 			
-			logger.info("A malha {} nao foi encontrada! retornando null!", mapa);
+			LOGGER.info("A malha {} nao foi encontrada! retornando null!", mapa);
 			
 			return null;
 		}
@@ -209,8 +209,8 @@ public class ShortestpathController {
 	public void criaMalhaViaria(@RequestBody(required = true) MalhaViaria malhaViaria) throws WalmartException {
 
 
-  	if(logger.isDebugEnabled()){
-  		logger.debug("Criando malha viaria {}", malhaViaria);
+  	if(LOGGER.isDebugEnabled()){
+  		LOGGER.debug("Criando malha viaria {}", malhaViaria);
   	}
 		
 		/**
@@ -238,8 +238,8 @@ public class ShortestpathController {
 
 				startLocation.connectTo(endLocation, distance);
 				
-		  	if(logger.isDebugEnabled()){
-		  		logger.debug("Montando caminho entre {} e {}, distancia {}", nameStartLocation, nameEndLocation,distance );
+		  	if(LOGGER.isDebugEnabled()){
+		  		LOGGER.debug("Montando caminho entre {} e {}, distancia {}", nameStartLocation, nameEndLocation,distance );
 		  	}
 				
 				locationRepository.save(startLocation);
@@ -249,7 +249,7 @@ public class ShortestpathController {
 
 		} catch (Exception e) {
 
-			logger.error("Erro ao tentar criar malha viaria!",e);
+			LOGGER.error("Erro ao tentar criar malha viaria!",e);
 			
 			throw new WalmartRuntimeException("Erro ao tentar criar malha viária!", e);
 
@@ -270,7 +270,7 @@ public class ShortestpathController {
 		MalhaViaria malhaAtual = getMalha(nomeMapa);
 
 		if (malhaAtual != null) {
-			logger.info("Malha {} ja existe!",nomeMapa);
+			LOGGER.info("Malha {} ja existe!",nomeMapa);
 			
 			throw new WalmartException("Já existe uma malha viária com o nome '" + nomeMapa + "'! Para alteração a malha deve ser recriada!");
 		}
@@ -285,7 +285,7 @@ public class ShortestpathController {
 	@ResponseBody
 	public void deleteMalha(@PathVariable String mapa) {
 
-		logger.info("EXCLUINDO MALHA VIARIA {}!!", mapa);
+		LOGGER.info("EXCLUINDO MALHA VIARIA {}!!", mapa);
 		
 		Map<String, Object> mapParam = new HashMap<>();
 
@@ -306,8 +306,8 @@ public class ShortestpathController {
 	private Location mergeLocation(String locationName, String mapName) {
 
 		
-  	if(logger.isDebugEnabled()){
-  		logger.debug("Mergeando ponto {} da malhaviaria {}", locationName, mapName);
+  	if(LOGGER.isDebugEnabled()){
+  		LOGGER.debug("Mergeando ponto {} da malhaviaria {}", locationName, mapName);
   	}
 		
 		Location location = locationRepository.findByNameAndMapa(locationName, mapName);
@@ -320,14 +320,14 @@ public class ShortestpathController {
 
 			location = locationRepository.save(location);
 
-	  	if(logger.isDebugEnabled()){
-	  		logger.debug("O ponto {}, malha{}, nao existe ainda. Criando!", locationName,mapName);
+	  	if(LOGGER.isDebugEnabled()){
+	  		LOGGER.debug("O ponto {}, malha{}, nao existe ainda. Criando!", locationName,mapName);
 	  	}
 
 		}else{
 			
-	  	if(logger.isDebugEnabled()){
-	  		logger.debug("O ponto {}, malha{}, ja existe . Apenas retornando!", locationName,mapName);
+	  	if(LOGGER.isDebugEnabled()){
+	  		LOGGER.debug("O ponto {}, malha{}, ja existe . Apenas retornando!", locationName,mapName);
 	  	}
 		}
 

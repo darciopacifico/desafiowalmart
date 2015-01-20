@@ -13,7 +13,8 @@ Para criar a camada de serviços para manutenção das malhas viárias e consult
 como serviços REST.
 
 O Servidor de aplicação utilizado é uma versão embedded do Tomcat, seguindo o padrão do Spring, mas a aplicação pode ser portada para qualquer 
-app server padrão JEE sem muitas dificuldades.
+app server padrão JEE sem muitas dificuldades. Da mesma maneira, foi utilizada a versão embedded do Neo4J, para facilitar testes e desenvolvimento. 
+É possível portar a aplicacao para utilização de um servidor Neo4j sem maiores dificultdades.
 
 Para construção dos testes unitários optei pelo TesgNG, devido à capacidade deste de encadear a ordem dos métodos de teste.
 
@@ -22,11 +23,14 @@ A análise estática do código foi realizada com o Sonar, utilizando as regras 
 
 PARA EXECUTAR A APLICAÇÃO:
 ==============================
-É necessário ter um banco de dados Neo4J rodando na máquina local.
 
 Com Maven:
-	Basta executar mvn install, para execuçao dos testes. Os componentes de negócio e controllers estão com >90% de cobertura.
+	- Basta executar mvn install, para compilação e execuçao dos testes. Os componentes de negócio e controllers estão com >90% de cobertura.
+	
+	- Os servidores Tomcat e Neo4J server foram configurados em modo embedded. Não é necessário nenhuma preparação destes ambientes.
 
 Com cliente REST:
-	Executar a classe "br.com.walmart.Application", como uma  Java Application padrão.
-	Os scripts de teste estão disponíveis em formato postman, no arquivo "postman_dump.txt"
+	- Executar a classe "br.com.walmart.Application", como uma  Java Application padrão.Os servidores Tomcat e Neo4J
+	server foram configurados em modo embedded. Não é necessário nenhuma preparação destes ambientes.
+	
+	- Os scripts de teste estão disponíveis em formato postman, no arquivo "postman_dump.txt"
