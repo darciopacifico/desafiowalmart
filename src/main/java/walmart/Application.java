@@ -53,12 +53,9 @@ public class Application extends Neo4jConfiguration {
 	@Bean
 	public GraphDatabaseService graphDatabaseService() {
 
-		// Server neo4j
+		//TODO: Servidor embedded seria melhor para testes, mas seria necessário configurar um gerenciador de transações. Farei isso, se der tempo
 		GraphDatabaseService gds = new SpringRestGraphDatabase("http://localhost:7474/db/data");
 		
-		//TODO: Servidor embedded seria melhor para testes, mas seria necessário configurar um gerenciador de transações. Farei isso, se der tempo
-		// GraphDatabaseService gds = new GraphDatabaseFactory().newEmbeddedDatabase("desafioWalmart.db");
-
 		return gds;
 	}
 

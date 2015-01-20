@@ -235,9 +235,6 @@ public class ShortestpathController {
 		
 		Result<Map<String, Object>> result = graphDatabase.queryEngine().query("MATCH (n {mapa:{mapa}})-[r]-() DELETE n, r", mapParam);
 		
-
-		System.out.println(result);
-		
 	}
 	
 	

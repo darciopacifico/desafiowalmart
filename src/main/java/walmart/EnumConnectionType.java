@@ -25,7 +25,7 @@ public enum EnumConnectionType implements RelationshipType {
 	private EnumConnectionType() {
 	}
 
-	private EnumConnectionType(Float coefConsumo) {
+	EnumConnectionType(Float coefConsumo) {
 		this.coefRendimento = coefConsumo;
 	}
 

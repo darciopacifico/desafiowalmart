@@ -51,6 +51,7 @@ public class ShortestpathCostServiceImpl implements ShortestpathCostService {
 	 * @throws WalmartException 
 	 */
 	@Transactional
+	@Override
 	public PathCost shortestpathCost(String nomeMapa, Float autonomia, Float valorCombustivel, String locationA, String locationB) throws WalmartException {
 		
 		
