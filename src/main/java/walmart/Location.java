@@ -31,6 +31,10 @@ public class Location {
 	
 	private String mapa;
 
+	@RelatedToVia
+	@Fetch
+	Set<Route> connections = new HashSet<Route>(5);
+	
 	
 	public Location() {
 	}
@@ -40,12 +44,8 @@ public class Location {
 		this.name = name;
 	}
 
-	@RelatedToVia
-	@Fetch
-	Set<Route> connections = new HashSet<Route>(5);
-
 	/**
-	 * 
+	 * Conecta um location aa outro atraves de uma rota. Seta nesta rota a distância entre estes dois.
 	 * @param otherLoc
 	 * @param distance
 	 * @param connectionType
@@ -58,7 +58,7 @@ public class Location {
 	}
 	
 	/**
-	 * 
+	 * Conecta um location aa outro atraves de uma rota. Seta nesta rota a distância entre estes dois e o tipo de estrada
 	 * @param otherLoc
 	 * @param distance
 	 * @param connectionType

@@ -233,7 +233,8 @@ public class ShortestpathController {
 		
 		mapParam.put("mapa", mapa);
 		
-		Result<Map<String, Object>> result = graphDatabase.queryEngine().query("MATCH (n {mapa:{mapa}})-[r]-() DELETE n, r", mapParam);
+		//TODO: Externalizar queries
+		graphDatabase.queryEngine().query("MATCH (n {mapa:{mapa}})-[r]-() DELETE n, r", mapParam);
 		
 	}
 	

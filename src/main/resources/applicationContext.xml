@@ -22,6 +22,7 @@
 	http://www.springframework.org/schema/data/neo4j http://www.springframework.org/schema/data/neo4j/spring-neo4j.xsd">
 
 
+	<!-- 
 	<context:component-scan base-package="walmart" />
     <context:annotation-config />
 
@@ -36,7 +37,6 @@
 
 	<mvc:annotation-driven />
 	
-	<!-- 
     <bean id="jsonView" class="org.springframework.web.servlet.view.json.MappingJacksonJsonView" >
     </bean>
 
