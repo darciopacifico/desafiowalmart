@@ -1,6 +1,11 @@
 package br.com.walmart;
 
 import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.event.TransactionEventHandler;
+import org.neo4j.graphdb.factory.GraphDatabaseFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.web.DispatcherServletAutoConfiguration;
@@ -12,8 +17,9 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.neo4j.config.EnableNeo4jRepositories;
 import org.springframework.data.neo4j.config.Neo4jConfiguration;
-import org.springframework.data.neo4j.rest.SpringRestGraphDatabase;
 import org.springframework.web.servlet.DispatcherServlet;
+
+import br.com.walmart.exception.WalmartRuntimeException;
 
 /**
  * Classe base contendo a configuração do contexto da aplicação, com um EmbeddedServletContainer
@@ -26,6 +32,11 @@ import org.springframework.web.servlet.DispatcherServlet;
 @EnableNeo4jRepositories(basePackages = "br.com.walmart")
 public class Application extends Neo4jConfiguration {
 
+	private static final String DESAFIO_WALMART_DB = "desafioWalmart.db";
+	protected Logger log = LoggerFactory.getLogger(Application.class);
+	
+	
+	
 	/**
 	 * Construtor padrao. Apenas seta o pacote base dos repositórios.
 	 */
@@ -48,12 +59,48 @@ public class Application extends Neo4jConfiguration {
 	 * 
 	 * @return
 	 */
-	@Bean
+	@Bean(destroyMethod="shutdown")
 	public GraphDatabaseService graphDatabaseService() {
 
 		// TODO: Servidor embedded seria melhor para testes, mas seria necessário configurar um gerenciador de transações. Farei isso, se der tempo
-		GraphDatabaseService gds = new SpringRestGraphDatabase("http://localhost:7474/db/data");
+		//GraphDatabaseService gds = new SpringRestGraphDatabase("http://localhost:7474/db/data");
 
+  	
+  	if(log.isDebugEnabled()){
+  		log.debug("Criando banco de dados Neo4J embedded!");
+  	}
+		
+  	
+		final GraphDatabaseService gds;
+		try {
+			gds = (GraphDatabaseService) new GraphDatabaseFactory().newEmbeddedDatabase(DESAFIO_WALMART_DB);
+		} catch (Exception e) {
+			
+			log.error("ERRO!! VERIFIQUE SE O ARQUIVO DO BANCO DE DADOS ("+DESAFIO_WALMART_DB+") NAO ESTA EM LOCK!  ");
+			log.error("AO ENCERRAR A APLICACAO SEMPRE AGUARDE O SHUTDOWN DO BANCO DE DADOS. ESTA OPERACAO PODE DEMORAR ALGUNS SEGUNDOS!  ");
+			log.error("Erro ao tentar instanciar base Neo4J Embedded!  ",e);
+			
+			throw new WalmartRuntimeException("Erro ao criar base Embedded!", e);
+		}
+		
+	
+    // Registers a shutdown hook for the Neo4j instance so that it
+    // shuts down nicely when the VM exits (even if you "Ctrl-C" the
+    // running application).
+    Runtime.getRuntime().addShutdownHook( new Thread()
+    {
+        @Override
+        public void run()
+        {
+        	
+        	if(log.isDebugEnabled()){
+        		log.debug("desligando banco de dados embedded Neo4J. Aguarde!!!...");
+        	}
+        	gds.shutdown();
+        }
+    } );
+	
+		
 		return gds;
 	}
 

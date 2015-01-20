@@ -73,5 +73,11 @@ public class MalhaViaria implements Serializable {
 		
 	}
 	
+
 	
+	@Override
+	public String toString() {
+		
+		return "Malha viaria:"+this.nomeMapa;
+	}
 }

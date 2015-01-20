@@ -14,6 +14,8 @@ import org.neo4j.graphdb.PathExpander;
 import org.neo4j.graphdb.PathExpanders;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.Transaction;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.neo4j.conversion.Result;
 import org.springframework.data.neo4j.core.GraphDatabase;
@@ -37,6 +39,8 @@ import br.com.walmart.vo.PathCost;
 @Component
 public class ShortestpathCostServiceImpl implements ShortestpathCostService {
 
+	protected Logger log = LoggerFactory.getLogger(ShortestpathCostServiceImpl.class);
+	
 	private static final String NAME_ATTRIBUTE = "name";
 
 	protected static final String WEIGHTED_ATTRIBUTE = "distance";
@@ -58,6 +62,10 @@ public class ShortestpathCostServiceImpl implements ShortestpathCostService {
 	@Override
 	public PathCost shortestpathCost(String nomeMapa, Float autonomia, Float valorCombustivel, String locationA, String locationB) throws WalmartException {
 
+  	if(log.isDebugEnabled()){
+  		log.debug("Iniciando calculo shortestpath!");
+  	}
+		
 		// calcula custo em funcao de autonomia do veículo e preco do combustivel informados
 		PathCost pathCost;
 		Transaction tx = graphDatabase.beginTx();
@@ -67,6 +75,10 @@ public class ShortestpathCostServiceImpl implements ShortestpathCostService {
 			List<Node> nodes = findNodes(locationA, locationB, nomeMapa);
 			Node nodeA = nodes.get(0);
 			Node nodeB = nodes.get(1);
+			
+	  	if(log.isDebugEnabled()){
+	  		log.debug("Calculando menor caminho entre {} e {}!", nodeA, nodeB);
+	  	}
 
 			// não haverá distinção de tipo de estrada ou direção do relacionamento
 			PathExpander<Object> expander = PathExpanders.allTypesAndDirections();
@@ -88,6 +100,8 @@ public class ShortestpathCostServiceImpl implements ShortestpathCostService {
 
 		} catch (Exception e) {
 
+			log.error("Erro ao tentar calcular shortest path",e);
+			
 			tx.failure();
 
 			throw new WalmartRuntimeException(e.getMessage(), e);
@@ -133,6 +147,8 @@ public class ShortestpathCostServiceImpl implements ShortestpathCostService {
 	private void copyPath(WeightedPath fromPath, PathCost toPathCost) {
 		Iterable<Relationship> relationships = fromPath.relationships();
 
+		
+		
 		for (Relationship relationship : relationships) {
 
 			CaminhoMalha caminhoMalha = new CaminhoMalha();
@@ -170,6 +186,8 @@ public class ShortestpathCostServiceImpl implements ShortestpathCostService {
 		// checa registros retornados
 
 		if (nodes.size() != 2) {
+			log.error("foram encontrados {} pontos a partir dos pontos {} e {} informados!", nodes.size(), locationA, locationB);
+			
 			throw new WalmartRuntimeException("Dois e apenas dois nos deveriam ter sido encontrados para o calculo do menor caminho! (pontos encontrados " + nodes + ") ");
 		}
 

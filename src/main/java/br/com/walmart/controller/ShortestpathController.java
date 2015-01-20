@@ -27,6 +27,8 @@ import java.util.Set;
 
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.Transaction;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.neo4j.conversion.Result;
 import org.springframework.data.neo4j.core.GraphDatabase;
@@ -42,6 +44,7 @@ import br.com.walmart.exception.WalmartException;
 import br.com.walmart.exception.WalmartRuntimeException;
 import br.com.walmart.repository.LocationRepository;
 import br.com.walmart.service.ShortestpathCostService;
+import br.com.walmart.service.ShortestpathCostServiceImpl;
 import br.com.walmart.vo.CaminhoMalha;
 import br.com.walmart.vo.Location;
 import br.com.walmart.vo.MalhaViaria;
@@ -56,6 +59,8 @@ import br.com.walmart.vo.PathCost;
 @RequestMapping("/shortestpath")
 public class ShortestpathController {
 
+	protected Logger log = LoggerFactory.getLogger(ShortestpathController.class);
+	
 	@Autowired
 	private ShortestpathCostService spp;
 
@@ -77,6 +82,10 @@ public class ShortestpathController {
 	public PathCost shortestpath(@RequestParam(required = true) String nomeMapa, @RequestParam(required = true) Float autonomia, @RequestParam(required = true) Float valorcombustivel, @RequestParam(required = true) String locala, @RequestParam(required = true) String localb)
 			throws WalmartException {
 
+  	if(log.isDebugEnabled()){
+  		log.debug("Invocando servico para calculo de menor caminho! nomeMapa {}, autonomia {}, valorcombustivel {}, locala {}, localb {} ", nomeMapa, autonomia, valorcombustivel, locala, localb);
+  	}
+		
 		// invoca servico shortestpathCost
 		PathCost pathCost = spp.shortestpathCost(nomeMapa, autonomia, valorcombustivel, locala, localb);
 
@@ -92,6 +101,12 @@ public class ShortestpathController {
 	@ResponseBody
 	public Set<String> getMalhas() {
 
+
+  	if(log.isDebugEnabled()){
+  		log.debug("recuperando os nomes das malhas contidas no sistema");
+  	}
+		
+		
 		Set<String> setMapas = new HashSet<>();
 
 		// TODO: Externalizar query
@@ -119,40 +134,66 @@ public class ShortestpathController {
 	@ResponseBody
 	public MalhaViaria getMalha(@PathVariable String mapa) {
 
+		
+
+  	if(log.isDebugEnabled()){
+  		log.debug("Recuperando dados da malha {}", mapa);
+  	}
+		
+		Transaction tx = graphDatabase.beginTx();
 		MalhaViaria malhaViaria = new MalhaViaria();
+		
+		try {
 
-		Map<String, Object> mapParam = new HashMap<>();
+			Map<String, Object> mapParam = new HashMap<>();
 
-		mapParam.put("mapa", mapa);
+			mapParam.put("mapa", mapa);
 
-		Result<Map<String, Object>> result = graphDatabase.queryEngine().query("match (n {mapa:{mapa}})-[r]-(m) return distinct r", mapParam);
+			Result<Map<String, Object>> result = graphDatabase.queryEngine().query("match (n {mapa:{mapa}})-[r]-(m) return distinct r", mapParam);
 
-		Iterator<Map<String, Object>> it = result.iterator();
+			Iterator<Map<String, Object>> it = result.iterator();
 
-		while (it.hasNext()) {
+			while (it.hasNext()) {
 
-			malhaViaria.setNomeMapa(mapa);
+				malhaViaria.setNomeMapa(mapa);
 
-			Map<String, Object> map = it.next();
+				Map<String, Object> map = it.next();
 
-			Relationship relationship = (Relationship) map.get("r");
+				Relationship relationship = (Relationship) map.get("r");
 
-			CaminhoMalha caminhoMalha = new CaminhoMalha();
+				CaminhoMalha caminhoMalha = new CaminhoMalha();
 
-			caminhoMalha.setStartLocation((String) relationship.getStartNode().getProperty("name"));
-			caminhoMalha.setEndLocation((String) relationship.getEndNode().getProperty("name"));
-			caminhoMalha.setDistance((Double) relationship.getProperty("distance"));
+				caminhoMalha.setStartLocation((String) relationship.getStartNode().getProperty("name"));
+				caminhoMalha.setEndLocation((String) relationship.getEndNode().getProperty("name"));
+				caminhoMalha.setDistance((Double) relationship.getProperty("distance"));
 
-			malhaViaria.getCaminhos().add(caminhoMalha);
+				malhaViaria.getCaminhos().add(caminhoMalha);
 
+			}
+			
+			tx.success();
+			
+		} catch (Exception e) {
+
+			log.error("Erro ao tentar recuperar malha!",e);
+			log.error("Erro ao tentar recuperar a malha {}", mapa);
+			
+			tx.failure();
+			throw new WalmartRuntimeException("Erro ao tentar recuperar malha!",e);
+			
 		}
 
 		// TODO: REVISAR!
 		if (malhaViaria.getNomeMapa() != null) {
 			return malhaViaria;
+
 		} else {
+			
+			log.info("A malha {} nao foi encontrada! retornando null!", mapa);
+			
 			return null;
 		}
+		
 	}
 
 	/**
@@ -168,6 +209,11 @@ public class ShortestpathController {
 	@ResponseBody
 	public void criaMalhaViaria(@RequestBody(required = true) MalhaViaria malhaViaria) throws WalmartException {
 
+
+  	if(log.isDebugEnabled()){
+  		log.debug("Criando malha viaria {}", malhaViaria);
+  	}
+		
 		/**
 		 * TODO: Construi o servico de criacao de malha de forma bem simples. Creio que não seria admissível manter esta transacao aberta por tanto tempo. TODO: Poderia ser criada uma versão mais sofisticada, em batch, conforme recomendacao do manual do Neo4J. TODO: Esta opcao batch
 		 * nao poderia concorrer com outras transacoes online. A carga de grandes volumes de dados deve ser feita offline, por um DBA.
@@ -189,8 +235,14 @@ public class ShortestpathController {
 
 				Location startLocation = mergeLocation(nameStartLocation, nomeMapa);
 				Location endLocation = mergeLocation(nameEndLocation, nomeMapa);
+				Double distance = caminhoMalha.getDistance();
 
-				startLocation.connectTo(endLocation, caminhoMalha.getDistance());
+				startLocation.connectTo(endLocation, distance);
+				
+		  	if(log.isDebugEnabled()){
+		  		log.debug("Montando caminho entre {} e {}, distancia {}", nameStartLocation, nameEndLocation,distance );
+		  	}
+				
 				locationRepository.save(startLocation);
 			}
 
@@ -198,6 +250,8 @@ public class ShortestpathController {
 
 		} catch (Exception e) {
 
+			log.error("Erro ao tentar criar malha viaria!",e);
+			
 			throw new WalmartRuntimeException("Erro ao tentar criar malha viária!", e);
 
 		} finally {
@@ -217,6 +271,8 @@ public class ShortestpathController {
 		MalhaViaria malhaAtual = getMalha(nomeMapa);
 
 		if (malhaAtual != null) {
+			log.info("Malha {} ja existe!",nomeMapa);
+			
 			throw new WalmartException("Já existe uma malha viária com o nome '" + nomeMapa + "'! Para alteração a malha deve ser recriada!");
 		}
 	}
@@ -230,6 +286,8 @@ public class ShortestpathController {
 	@ResponseBody
 	public void deleteMalha(@PathVariable String mapa) {
 
+		log.info("EXCLUINDO MALHA VIARIA {}!!", mapa);
+		
 		Map<String, Object> mapParam = new HashMap<>();
 
 		mapParam.put("mapa", mapa);
@@ -248,6 +306,11 @@ public class ShortestpathController {
 	 */
 	private Location mergeLocation(String locationName, String mapName) {
 
+		
+  	if(log.isDebugEnabled()){
+  		log.debug("Mergeando ponto {} da malhaviaria {}", locationName, mapName);
+  	}
+		
 		Location location = locationRepository.findByNameAndMapa(locationName, mapName);
 
 		if (location == null) {
@@ -257,6 +320,16 @@ public class ShortestpathController {
 			location.setName(locationName);
 
 			location = locationRepository.save(location);
+
+	  	if(log.isDebugEnabled()){
+	  		log.debug("O ponto {}, malha{}, nao existe ainda. Criando!", locationName,mapName);
+	  	}
+
+		}else{
+			
+	  	if(log.isDebugEnabled()){
+	  		log.debug("O ponto {}, malha{}, ja existe . Apenas retornando!", locationName,mapName);
+	  	}
 		}
 
 		return location;
