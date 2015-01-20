@@ -90,7 +90,7 @@ public class ShortestpathCostServiceImpl implements ShortestpathCostService {
 			
 			tx.failure();
 
-			throw new WalmartRuntimeException("Erro ao tentar calcular caminho mais economico!",e);
+			throw new WalmartRuntimeException(e.getMessage(),e);
 			
 		}
 		
@@ -168,8 +168,10 @@ public class ShortestpathCostServiceImpl implements ShortestpathCostService {
 		List<Node> nodes = resultToList(result);
 		
 		//checa registros retornados
+		
+		
 		if(nodes.size()!=2){
-			throw new WalmartRuntimeException("Dois e apenas dois nos deveriam ter sido encontrados para o calculo do menor caminho! ("+nodes+") ");
+			throw new WalmartRuntimeException("Dois e apenas dois nos deveriam ter sido encontrados para o calculo do menor caminho! (pontos encontrados "+nodes+") ");
 		}
 		
 		return nodes;
