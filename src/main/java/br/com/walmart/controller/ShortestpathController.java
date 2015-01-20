@@ -44,7 +44,6 @@ import br.com.walmart.exception.WalmartException;
 import br.com.walmart.exception.WalmartRuntimeException;
 import br.com.walmart.repository.LocationRepository;
 import br.com.walmart.service.ShortestpathCostService;
-import br.com.walmart.service.ShortestpathCostServiceImpl;
 import br.com.walmart.vo.CaminhoMalha;
 import br.com.walmart.vo.Location;
 import br.com.walmart.vo.MalhaViaria;
@@ -59,7 +58,7 @@ import br.com.walmart.vo.PathCost;
 @RequestMapping("/shortestpath")
 public class ShortestpathController {
 
-	protected Logger log = LoggerFactory.getLogger(ShortestpathController.class);
+	private static Logger log = LoggerFactory.getLogger(ShortestpathController.class);
 	
 	@Autowired
 	private ShortestpathCostService spp;

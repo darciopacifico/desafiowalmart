@@ -6,8 +6,6 @@ import java.util.List;
 
 import org.apache.commons.lang.builder.HashCodeBuilder;
 
-import bsh.This;
-
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 /**

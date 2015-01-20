@@ -1,11 +1,9 @@
 package br.com.walmart;
 
 import org.neo4j.graphdb.GraphDatabaseService;
-import org.neo4j.graphdb.event.TransactionEventHandler;
 import org.neo4j.graphdb.factory.GraphDatabaseFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.web.DispatcherServletAutoConfiguration;
@@ -33,7 +31,7 @@ import br.com.walmart.exception.WalmartRuntimeException;
 public class Application extends Neo4jConfiguration {
 
 	private static final String DESAFIO_WALMART_DB = "desafioWalmart.db";
-	protected Logger log = LoggerFactory.getLogger(Application.class);
+	private static Logger log = LoggerFactory.getLogger(Application.class);
 	
 	
 	
@@ -62,14 +60,9 @@ public class Application extends Neo4jConfiguration {
 	@Bean(destroyMethod="shutdown")
 	public GraphDatabaseService graphDatabaseService() {
 
-		// TODO: Servidor embedded seria melhor para testes, mas seria necessário configurar um gerenciador de transações. Farei isso, se der tempo
-		//GraphDatabaseService gds = new SpringRestGraphDatabase("http://localhost:7474/db/data");
-
-  	
   	if(log.isDebugEnabled()){
   		log.debug("Criando banco de dados Neo4J embedded!");
   	}
-		
   	
 		final GraphDatabaseService gds;
 		try {
