@@ -59,11 +59,9 @@ public class ShortestpathController {
 	@Autowired
 	private ShortestpathCostService spp;
 
-	
 	@Autowired
 	private LocationRepository locationRepository;
 
-	
 	@Autowired
 	private GraphDatabase graphDatabase;
 
@@ -85,83 +83,78 @@ public class ShortestpathController {
 		return pathCost;
 	}
 
-	
-	
 	/**
-	 * Recupera os nomes de todas as malhas viarias contidas no banco 
+	 * Recupera os nomes de todas as malhas viarias contidas no banco
+	 * 
 	 * @return
 	 */
 	@RequestMapping(value = { "/nomesmapas" }, method = RequestMethod.GET)
 	@ResponseBody
-	public Set<String> getMalhas(){
-		
+	public Set<String> getMalhas() {
+
 		Set<String> setMapas = new HashSet<>();
-		
-		//TODO: Externalizar query
+
+		// TODO: Externalizar query
 		Result<Map<String, Object>> result = graphDatabase.queryEngine().query("match  (n)  return distinct n.mapa;", null);
-		
 
 		Iterator<Map<String, Object>> it = result.iterator();
-		
-		while(it.hasNext()){
-			
+
+		while (it.hasNext()) {
+
 			Map<String, Object> map = it.next();
-			
-			setMapas.add(map.get("n.mapa")+"");
-			
+
+			setMapas.add(map.get("n.mapa") + "");
+
 		}
 		return setMapas;
-		
-	}
-	
 
-	
+	}
+
 	/**
-	 * Recupera os nomes de todas as malhas viarias contidas no banco 
+	 * Recupera os nomes de todas as malhas viarias contidas no banco
+	 * 
 	 * @return
 	 */
 	@RequestMapping(value = { "/malhaviaria/{mapa}" }, method = RequestMethod.GET)
 	@ResponseBody
-	public MalhaViaria getMalha(@PathVariable String mapa){
-		
+	public MalhaViaria getMalha(@PathVariable String mapa) {
+
 		MalhaViaria malhaViaria = new MalhaViaria();
-		
+
 		Map<String, Object> mapParam = new HashMap<>();
-		
+
 		mapParam.put("mapa", mapa);
-		
+
 		Result<Map<String, Object>> result = graphDatabase.queryEngine().query("match (n {mapa:{mapa}})-[r]-(m) return distinct r", mapParam);
-		
 
 		Iterator<Map<String, Object>> it = result.iterator();
-		
-		while(it.hasNext()){
+
+		while (it.hasNext()) {
 
 			malhaViaria.setNomeMapa(mapa);
-			
+
 			Map<String, Object> map = it.next();
-			
+
 			Relationship relationship = (Relationship) map.get("r");
-			
-			CaminhoMalha caminhoMalha= new CaminhoMalha();
-			
+
+			CaminhoMalha caminhoMalha = new CaminhoMalha();
+
 			caminhoMalha.setStartLocation((String) relationship.getStartNode().getProperty("name"));
 			caminhoMalha.setEndLocation((String) relationship.getEndNode().getProperty("name"));
 			caminhoMalha.setDistance((Double) relationship.getProperty("distance"));
 
 			malhaViaria.getCaminhos().add(caminhoMalha);
-			
+
 		}
-		
-		//TODO: REVISAR!
-		if(malhaViaria.getNomeMapa()!=null){
+
+		// TODO: REVISAR!
+		if (malhaViaria.getNomeMapa() != null) {
 			return malhaViaria;
-		}else{
+		} else {
 			return null;
 		}
 	}
-	
-	
+
 	/**
 	 * Recebe requisicao REST e invoca serviço shortestpathCost
 	 * 
@@ -173,20 +166,19 @@ public class ShortestpathController {
 	 */
 	@RequestMapping(value = "/malhaviaria", consumes = "application/json", method = RequestMethod.PUT)
 	@ResponseBody
-	public void criaMalhaViaria( @RequestBody(required = true) MalhaViaria malhaViaria) throws WalmartException {
+	public void criaMalhaViaria(@RequestBody(required = true) MalhaViaria malhaViaria) throws WalmartException {
 
 		/**
-		TODO: Construi o servico de criacao de malha de forma bem simples. Creio que não seria admissível manter esta transacao aberta por tanto tempo.
-		TODO: Poderia ser criada uma versão mais sofisticada, em batch, conforme recomendacao do manual do Neo4J. 
-		TODO: Esta opcao batch nao poderia concorrer com outras transacoes online. A carga de grandes volumes de dados deve ser feita offline, por um DBA. 
+		 * TODO: Construi o servico de criacao de malha de forma bem simples. Creio que não seria admissível manter esta transacao aberta por tanto tempo. TODO: Poderia ser criada uma versão mais sofisticada, em batch, conforme recomendacao do manual do Neo4J. TODO: Esta opcao batch
+		 * nao poderia concorrer com outras transacoes online. A carga de grandes volumes de dados deve ser feita offline, por um DBA.
 		 **/
 		Transaction tx = graphDatabase.beginTx();
-		
+
 		String nomeMapa = malhaViaria.getNomeMapa();
 
-		//checa se já existe uma malha com o mesmo nome. Lança exceção, caso exista
+		// checa se já existe uma malha com o mesmo nome. Lança exceção, caso exista
 		checkNameAvailability(nomeMapa);
-		
+
 		List<CaminhoMalha> caminhos = malhaViaria.getCaminhos();
 
 		try {
@@ -203,57 +195,53 @@ public class ShortestpathController {
 			}
 
 			tx.success();
-			
+
 		} catch (Exception e) {
-			
-			throw new WalmartRuntimeException("Erro ao tentar criar malha viária!",e);
-			
+
+			throw new WalmartRuntimeException("Erro ao tentar criar malha viária!", e);
+
 		} finally {
 			tx.close();
 		}
 
 	}
 
-
 	/**
 	 * Verifica se já existe uma malha com o mesmo nome.
+	 * 
 	 * @param nomeMapa
-	 * @throws WalmartException Caso já exista uma malha com este nome.
+	 * @throws WalmartException
+	 *           Caso já exista uma malha com este nome.
 	 */
 	protected void checkNameAvailability(String nomeMapa) throws WalmartException {
 		MalhaViaria malhaAtual = getMalha(nomeMapa);
-		
-		if (malhaAtual!=null){
-			throw new WalmartException("Já existe uma malha viária com o nome '"+nomeMapa+"'! Para alteração a malha deve ser recriada!"); 
+
+		if (malhaAtual != null) {
+			throw new WalmartException("Já existe uma malha viária com o nome '" + nomeMapa + "'! Para alteração a malha deve ser recriada!");
 		}
 	}
 
-	
 	/**
-	 * Recupera os nomes de todas as malhas viarias contidas no banco 
+	 * Recupera os nomes de todas as malhas viarias contidas no banco
+	 * 
 	 * @return
 	 */
 	@RequestMapping(value = { "/malhaviaria/{mapa}" }, method = RequestMethod.DELETE)
 	@ResponseBody
-	public void deleteMalha(@PathVariable String mapa){
-		
-		
+	public void deleteMalha(@PathVariable String mapa) {
+
 		Map<String, Object> mapParam = new HashMap<>();
-		
+
 		mapParam.put("mapa", mapa);
-		
-		//TODO: Externalizar queries
+
+		// TODO: Externalizar queries
 		graphDatabase.queryEngine().query("MATCH (n {mapa:{mapa}})-[r]-() DELETE n, r", mapParam);
-		
+
 	}
-	
-	
-	
-	
-	
-	
+
 	/**
 	 * Encontra ou cria o registro de location
+	 * 
 	 * @param locationName
 	 * @param mapName
 	 * @return

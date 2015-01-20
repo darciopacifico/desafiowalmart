@@ -15,10 +15,10 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
  * 
  * @author darcio
  */
-@RelationshipEntity(type="ROAD")
+@RelationshipEntity(type = "ROAD")
 @JsonSerialize
 public class Route {
-	
+
 	@GraphId
 	Long id;
 
@@ -26,8 +26,8 @@ public class Route {
 	EnumConnectionType type = EnumConnectionType.ROAD;
 
 	@GraphProperty
-	Double distance=0d;
-	
+	Double distance = 0d;
+
 	@StartNode
 	@Fetch
 	Location startLocation;
@@ -35,11 +35,9 @@ public class Route {
 	@EndNode
 	@Fetch
 	Location endLocation;
-	
-	
+
 	public Route() {
 	}
-	
 
 	public Route(Location startLocation, Location endLocation, Double distance) {
 		super();
@@ -47,62 +45,50 @@ public class Route {
 		this.endLocation = endLocation;
 		this.distance = distance;
 	}
-	
 
 	public Route(Location startLocation, Location endLocation, Double distance, EnumConnectionType type) {
 		this(startLocation, endLocation, distance);
 		this.type = type;
 	}
 
-
 	public Location getStartLocation() {
 		return startLocation;
 	}
-
 
 	public void setStartLocation(Location startLocation) {
 		this.startLocation = startLocation;
 	}
 
-
 	public Location getEndLocation() {
 		return endLocation;
 	}
-
 
 	public void setEndLocation(Location endLocation) {
 		this.endLocation = endLocation;
 	}
 
-
 	public Double getDistance() {
 		return distance;
 	}
 
-
 	public void setDistance(Double distance) {
 		this.distance = distance;
 	}
-	
-	
+
 	public EnumConnectionType getType() {
 		return type;
 	}
-
 
 	public void setType(EnumConnectionType type) {
 		this.type = type;
 	}
 
-
 	public Long getId() {
 		return id;
 	}
 
-
 	public void setId(Long id) {
 		this.id = id;
 	}
-	
-	
+
 }

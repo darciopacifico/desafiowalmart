@@ -15,8 +15,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
  * 
  * O Atributo mapa, diferencia as diferentes malhas viárias contidas no sistema.
  * 
- * TODO: REVISAR SE ESTA É A MELHOR MANEIRA DE SEPARAR OS MAPAS. Achei interessante manter assim, para futuramente conectar os mapas, 
- * determinar por quais cidades o melhor caminho passará.
+ * TODO: REVISAR SE ESTA É A MELHOR MANEIRA DE SEPARAR OS MAPAS. Achei interessante manter assim, para futuramente conectar os mapas, determinar por quais cidades o melhor caminho passará.
  * 
  * @author darcio
  */
@@ -28,14 +27,13 @@ public class Location {
 	private Long id;
 
 	private String name;
-	
+
 	private String mapa;
 
 	@RelatedToVia
 	@Fetch
 	Set<Route> connections = new HashSet<Route>(5);
-	
-	
+
 	public Location() {
 	}
 
@@ -46,34 +44,36 @@ public class Location {
 
 	/**
 	 * Conecta um location aa outro atraves de uma rota. Seta nesta rota a distância entre estes dois.
+	 * 
 	 * @param otherLoc
 	 * @param distance
 	 * @param connectionType
 	 * @return
 	 */
 	public Route connectTo(Location otherLoc, Double distance) {
-		Route route = new Route(this,otherLoc, distance);
+		Route route = new Route(this, otherLoc, distance);
 		this.connections.add(route);
 		return route;
 	}
-	
+
 	/**
 	 * Conecta um location aa outro atraves de uma rota. Seta nesta rota a distância entre estes dois e o tipo de estrada
+	 * 
 	 * @param otherLoc
 	 * @param distance
 	 * @param connectionType
 	 * @return
 	 */
 	public Route connectTo(Location otherLoc, Double distance, EnumConnectionType type) {
-		
+
 		Route route = connectTo(otherLoc, distance);
-		
+
 		route.setType(type);
-		
+
 		return route;
-		
+
 	}
-	
+
 	/**
 	 * 
 	 * @return
@@ -81,8 +81,7 @@ public class Location {
 	public String getMapa() {
 		return mapa;
 	}
-	
-	
+
 	public Long getId() {
 		return id;
 	}
@@ -106,7 +105,6 @@ public class Location {
 	public void setConnections(Set<Route> connections) {
 		this.connections = connections;
 	}
-
 
 	public void setMapa(String mapa) {
 		this.mapa = mapa;

@@ -26,16 +26,13 @@ import org.springframework.web.servlet.DispatcherServlet;
 @EnableNeo4jRepositories(basePackages = "br.com.walmart")
 public class Application extends Neo4jConfiguration {
 
-	
-	
 	/**
 	 * Construtor padrao. Apenas seta o pacote base dos repositórios.
 	 */
 	public Application() {
 		setBasePackage("br.com.walmart");
 	}
-	
-	
+
 	/**
 	 * Inicia a aplicação como Java Application, Tomcat Em
 	 * 
@@ -54,15 +51,15 @@ public class Application extends Neo4jConfiguration {
 	@Bean
 	public GraphDatabaseService graphDatabaseService() {
 
-		//TODO: Servidor embedded seria melhor para testes, mas seria necessário configurar um gerenciador de transações. Farei isso, se der tempo
+		// TODO: Servidor embedded seria melhor para testes, mas seria necessário configurar um gerenciador de transações. Farei isso, se der tempo
 		GraphDatabaseService gds = new SpringRestGraphDatabase("http://localhost:7474/db/data");
-		
+
 		return gds;
 	}
 
-	
 	/**
 	 * Cria o bean registrador de servlets
+	 * 
 	 * @return
 	 */
 	@Bean
@@ -73,9 +70,9 @@ public class Application extends Neo4jConfiguration {
 		return registration;
 	}
 
-	
 	/**
 	 * Bean do servlet dispatcher padrao do framework Spring MVC
+	 * 
 	 * @return
 	 */
 	@Bean(name = DispatcherServletAutoConfiguration.DEFAULT_DISPATCHER_SERVLET_BEAN_NAME)
@@ -85,6 +82,7 @@ public class Application extends Neo4jConfiguration {
 
 	/**
 	 * Bean do container Tomcat Embedded para a aplicação
+	 * 
 	 * @return
 	 */
 	@Bean
