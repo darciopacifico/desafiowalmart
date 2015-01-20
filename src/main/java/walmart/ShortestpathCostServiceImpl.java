@@ -13,10 +13,12 @@ import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.PathExpander;
 import org.neo4j.graphdb.PathExpanders;
 import org.neo4j.graphdb.Relationship;
+import org.neo4j.graphdb.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.neo4j.conversion.Result;
 import org.springframework.data.neo4j.core.GraphDatabase;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 
 /**
@@ -48,32 +50,51 @@ public class ShortestpathCostServiceImpl implements ShortestpathCostService {
 	 * @return
 	 * @throws WalmartException 
 	 */
+	@Transactional
 	public PathCost shortestpathCost(String nomeMapa, Float autonomia, Float valorCombustivel, String locationA, String locationB) throws WalmartException {
-
-		//busca os dois nós informados.
-		List<Node> nodes = findNodes(locationA, locationB);
-		Node nodeA = nodes.get(0);
-		Node nodeB = nodes.get(1);
-
 		
-		//não haverá distinção de tipo de estrada ou direção do relacionamento
-		PathExpander<Object> expander = PathExpanders.allTypesAndDirections();
-		
-		
-		
-		//cria-se um pathFinder com algoritmo de Dijkstra, ponderado pelo atributo "distance"
-		PathFinder<WeightedPath> finder = GraphAlgoFactory.dijkstra(expander, WEIGHTED_ATTRIBUTE);
-		
-		//executa a busca pelo menor caminho
-		WeightedPath path = finder.findSinglePath(nodeA, nodeB);
-		
-		//trata caminho nao encontrado
-		if(path==null){
-			throw new WalmartException("Nao ha caminho conhecido entre os pontos informados!");
-		}
 		
 		//calcula custo em funcao de autonomia do veículo e preco do combustivel informados
-		PathCost pathCost = calculaCustoTotal(autonomia, valorCombustivel, path);
+		PathCost pathCost;
+		Transaction tx = graphDatabase.beginTx();
+		try {
+			
+			
+			//busca os dois nós informados.
+			List<Node> nodes = findNodes(locationA, locationB, nomeMapa);
+			Node nodeA = nodes.get(0);
+			Node nodeB = nodes.get(1);
+
+			
+			//não haverá distinção de tipo de estrada ou direção do relacionamento
+			PathExpander<Object> expander = PathExpanders.allTypesAndDirections();
+			
+			
+			
+			//cria-se um pathFinder com algoritmo de Dijkstra, ponderado pelo atributo "distance"
+			PathFinder<WeightedPath> finder = GraphAlgoFactory.dijkstra(expander, WEIGHTED_ATTRIBUTE);
+			
+			//executa a busca pelo menor caminho
+			WeightedPath path = finder.findSinglePath(nodeA, nodeB);
+			
+			//trata caminho nao encontrado
+			if(path==null){
+				throw new WalmartException("Nao ha caminho conhecido entre os pontos informados!");
+			}
+			
+			pathCost = calculaCustoTotal(autonomia, valorCombustivel, path);
+			
+			tx.success();
+			
+		} catch (Exception e) {
+			
+			tx.failure();
+
+			throw new WalmartRuntimeException("Erro ao tentar calcular caminho mais economico!",e);
+			
+		}
+		
+		
 		
 		return pathCost;
 	}
@@ -129,18 +150,20 @@ public class ShortestpathCostServiceImpl implements ShortestpathCostService {
 	 * Busca os dois nós informados. Lança RuntimeException, caso um dos nós não seja encontrado.
 	 * @param locationA
 	 * @param locationB
+	 * @param nomeMapa 
 	 * @return
 	 */
-	private List<Node> findNodes(String locationA, String locationB) {
+	private List<Node> findNodes(String locationA, String locationB, String nomeMapa) {
 
 		Map<String, Object> mapParam = new HashMap<String, Object>();
 		
 		mapParam.put("nameA", locationA);
 		mapParam.put("nameB", locationB);
+		mapParam.put("mapa", nomeMapa);
 		
 		
 		//TODO: Externalizar query
-		Result<Map<String, Object>> result = graphDatabase.queryEngine().query("match (n) where n.name={nameA} or n.name={nameB} return DISTINCT n;", mapParam);
+		Result<Map<String, Object>> result = graphDatabase.queryEngine().query("match (n) where (n.name={nameA} or n.name={nameB}) and n.mapa={mapa}  return DISTINCT n;", mapParam);
 		
 		List<Node> nodes = resultToList(result);
 		

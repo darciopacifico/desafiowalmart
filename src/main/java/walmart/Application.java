@@ -1,6 +1,8 @@
 package walmart;
 
 import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.factory.GraphDatabaseFactory;
+import org.neo4j.kernel.EmbeddedGraphDatabase;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.web.DispatcherServletAutoConfiguration;
@@ -12,7 +14,6 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.neo4j.config.EnableNeo4jRepositories;
 import org.springframework.data.neo4j.config.Neo4jConfiguration;
-import org.springframework.data.neo4j.rest.SpringRestGraphDatabase;
 import org.springframework.web.servlet.DispatcherServlet;
 
 
@@ -27,9 +28,17 @@ public class Application extends Neo4jConfiguration {
 	}
 	
 	
+	
+	
+	
+	
 	@Bean
 	public GraphDatabaseService graphDatabaseService(){
-		GraphDatabaseService gds = new SpringRestGraphDatabase("http://localhost:7474/db/data");
+		
+		//Server neo4j
+		//GraphDatabaseService gds = new SpringRestGraphDatabase("http://localhost:7474/db/data");
+		GraphDatabaseService gds = new GraphDatabaseFactory().newEmbeddedDatabase("desafioWalmart.db");
+		
 		return gds;
 	}
 

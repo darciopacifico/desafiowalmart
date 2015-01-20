@@ -18,23 +18,27 @@ package walmart;
 
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.neo4j.conversion.Result;
 import org.springframework.data.neo4j.core.GraphDatabase;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.ResponseStatus;
 
 /**
  * Controller REST para exposição do serviço de cálculo de custo do menor caminho
@@ -78,7 +82,7 @@ public class ShortestpathController {
 	 * Recupera os nomes de todas as malhas viarias contidas no banco 
 	 * @return
 	 */
-	@RequestMapping(value = { "/nomemapas" }, method = RequestMethod.GET)
+	@RequestMapping(value = { "/nomesmapas" }, method = RequestMethod.GET)
 	@ResponseBody
 	public Set<String> getMalhas(){
 		
@@ -103,6 +107,62 @@ public class ShortestpathController {
 	}
 	
 	
+
+	
+	/**
+	 * Recupera os nomes de todas as malhas viarias contidas no banco 
+	 * @return
+	 */
+	@RequestMapping(value = { "/malhaviaria/{mapa}" }, method = RequestMethod.GET)
+	@ResponseBody
+	public MalhaViaria getMalha(@PathVariable String mapa){
+		
+		
+		MalhaViaria malhaViaria = new MalhaViaria();
+		
+		Map<String, Object> mapParam = new HashMap<>();
+		
+		mapParam.put("mapa", mapa);
+		
+		Result<Map<String, Object>> result = graphDatabase.queryEngine().query("match (n {mapa:{mapa}})-[r]-(m) return distinct r", mapParam);
+		
+
+		Iterator<Map<String, Object>> it = result.iterator();
+		
+		while(it.hasNext()){
+
+			malhaViaria.setNomeMapa(mapa);
+			
+			Map<String, Object> map = it.next();
+			
+			Relationship relationship = (Relationship) map.get("r");
+			
+			CaminhoMalha caminhoMalha= new CaminhoMalha();
+			
+			caminhoMalha.setStartLocation((String) relationship.getStartNode().getProperty("name"));
+			caminhoMalha.setEndLocation((String) relationship.getEndNode().getProperty("name"));
+			caminhoMalha.setDistance((Double) relationship.getProperty("distance"));
+
+			malhaViaria.getCaminhos().add(caminhoMalha);
+			
+		}
+		
+		
+		//TODO: REVISAR!
+		if(malhaViaria.getNomeMapa()!=null){
+			return malhaViaria;
+			
+		}else{
+
+			return null;
+		}
+		
+		
+		
+	}
+	
+	
+	
 	
 	/**
 	 * Recebe requisicao REST e invoca serviço shortestpathCost
@@ -111,8 +171,9 @@ public class ShortestpathController {
 	 * @return
 	 * @throws WalmartException
 	 */
-	@RequestMapping(value = { "/malhaviaria" }, method = RequestMethod.PUT)
-	public void inserirMalhaViaria(@RequestBody(required = true) MalhaViaria malhaViaria) throws WalmartException {
+	@RequestMapping(value = "/malhaviaria", consumes = "application/json", method = RequestMethod.PUT)
+	@ResponseBody
+	public void inserirMalhaViaria( @RequestBody(required = true) MalhaViaria malhaViaria) throws WalmartException {
 
 		/**
 		TODO: Construi o servico de criacao de malha de forma bem simples. Creio que não seria admissível manter esta transacao aberta por tanto tempo.
@@ -146,6 +207,33 @@ public class ShortestpathController {
 
 	}
 
+	
+
+	
+	/**
+	 * Recupera os nomes de todas as malhas viarias contidas no banco 
+	 * @return
+	 */
+	@RequestMapping(value = { "/malhaviaria/{mapa}" }, method = RequestMethod.DELETE)
+	@ResponseBody
+	public void deleteMalha(@PathVariable String mapa){
+		
+		
+		Map<String, Object> mapParam = new HashMap<>();
+		
+		mapParam.put("mapa", mapa);
+		
+		Result<Map<String, Object>> result = graphDatabase.queryEngine().query("MATCH (n {mapa:{mapa}})-[r]-() DELETE n, r", mapParam);
+		
+
+		System.out.println(result);
+		
+	}
+	
+	
+	
+	
+	
 	
 	/**
 	 * Encontra ou cria o registro de location
