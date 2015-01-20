@@ -40,4 +40,18 @@ public class MalhaViaria implements Serializable {
 		this.caminhos = caminhos;
 	}
 
+	@Override
+	public boolean equals(Object o) {
+		
+		if (this == o)
+			return true;
+
+		if (o == null || getClass() != o.getClass())
+			return false;
+
+		MalhaViaria malhaViaria = (MalhaViaria) o;
+
+		return this.nomeMapa.equals(malhaViaria.nomeMapa);
+	}
+
 }

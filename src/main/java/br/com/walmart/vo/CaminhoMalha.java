@@ -2,6 +2,8 @@ package br.com.walmart.vo;
 
 import java.io.Serializable;
 
+import org.apache.commons.lang.builder.EqualsBuilder;
+
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 /**
@@ -21,9 +23,20 @@ public class CaminhoMalha implements Serializable {
 	private String endLocation;
 	private Double distance;
 
+	public CaminhoMalha() {
+	}
+	
+	public CaminhoMalha(String startLocation, String endLocation, Double distance) {
+		super();
+		this.startLocation = startLocation;
+		this.endLocation = endLocation;
+		this.distance = distance;
+	}
+
 	public String getStartLocation() {
 		return startLocation;
 	}
+	
 
 	public void setStartLocation(String startLocation) {
 		this.startLocation = startLocation;
@@ -45,4 +58,22 @@ public class CaminhoMalha implements Serializable {
 		this.distance = distance;
 	}
 
+
+	@Override
+	public boolean equals(Object o) {
+		
+		if (this == o)
+			return true;
+
+		if (o == null || getClass() != o.getClass())
+			return false;
+
+		CaminhoMalha caminho = (CaminhoMalha) o;
+
+		
+		return EqualsBuilder.reflectionEquals(this, caminho);
+
+	}
+	
+	
 }
