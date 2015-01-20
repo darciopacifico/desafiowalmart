@@ -23,11 +23,11 @@
 
 
 	<!-- 
-	<context:component-scan base-package="walmart" />
+	<context:component-scan base-package="br.com.walmart" />
     <context:annotation-config />
 
-	<neo4j:repositories base-package="walmart"/>
-	<neo4j:config graphDatabaseService="graphDatabaseService" base-package="walmart"/>
+	<neo4j:repositories base-package="br.com.walmart"/>
+	<neo4j:config graphDatabaseService="graphDatabaseService" base-package="br.com.walmart"/>
 	
 	
 	<bean id="graphDatabaseService"
