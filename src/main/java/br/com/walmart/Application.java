@@ -31,7 +31,7 @@ import br.com.walmart.exception.WalmartRuntimeException;
 public class Application extends Neo4jConfiguration {
 
 	private static final String DESAFIO_WALMART_DB = "desafioWalmart.db";
-	private static Logger log = LoggerFactory.getLogger(Application.class);
+	private static Logger logger = LoggerFactory.getLogger(Application.class);
 	
 	
 	
@@ -60,18 +60,18 @@ public class Application extends Neo4jConfiguration {
 	@Bean(destroyMethod="shutdown")
 	public GraphDatabaseService graphDatabaseService() {
 
-  	if(log.isDebugEnabled()){
-  		log.debug("Criando banco de dados Neo4J embedded!");
+  	if(logger.isDebugEnabled()){
+  		logger.debug("Criando banco de dados Neo4J embedded!");
   	}
   	
 		final GraphDatabaseService gds;
 		try {
-			gds = (GraphDatabaseService) new GraphDatabaseFactory().newEmbeddedDatabase(DESAFIO_WALMART_DB);
+			gds = new GraphDatabaseFactory().newEmbeddedDatabase(DESAFIO_WALMART_DB);
 		} catch (Exception e) {
 			
-			log.error("ERRO!! VERIFIQUE SE O ARQUIVO DO BANCO DE DADOS ("+DESAFIO_WALMART_DB+") NAO ESTA EM LOCK!  ");
-			log.error("AO ENCERRAR A APLICACAO SEMPRE AGUARDE O SHUTDOWN DO BANCO DE DADOS. ESTA OPERACAO PODE DEMORAR ALGUNS SEGUNDOS!  ");
-			log.error("Erro ao tentar instanciar base Neo4J Embedded!  ",e);
+			logger.error("ERRO!! VERIFIQUE SE O ARQUIVO DO BANCO DE DADOS ("+DESAFIO_WALMART_DB+") NAO ESTA EM LOCK!  ");
+			logger.error("AO ENCERRAR A APLICACAO SEMPRE AGUARDE O SHUTDOWN DO BANCO DE DADOS. ESTA OPERACAO PODE DEMORAR ALGUNS SEGUNDOS!  ");
+			logger.error("Erro ao tentar instanciar base Neo4J Embedded!  ",e);
 			
 			throw new WalmartRuntimeException("Erro ao criar base Embedded!", e);
 		}
@@ -86,8 +86,8 @@ public class Application extends Neo4jConfiguration {
         public void run()
         {
         	
-        	if(log.isDebugEnabled()){
-        		log.debug("desligando banco de dados embedded Neo4J. Aguarde!!!...");
+        	if(logger.isDebugEnabled()){
+        		logger.debug("desligando banco de dados embedded Neo4J. Aguarde!!!...");
         	}
         	gds.shutdown();
         }

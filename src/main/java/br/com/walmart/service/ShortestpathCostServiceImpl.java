@@ -39,7 +39,7 @@ import br.com.walmart.vo.PathCost;
 @Component
 public class ShortestpathCostServiceImpl implements ShortestpathCostService {
 
-	private static Logger log = LoggerFactory.getLogger(ShortestpathCostServiceImpl.class);
+	private static Logger logger = LoggerFactory.getLogger(ShortestpathCostServiceImpl.class);
 	
 	private static final String NAME_ATTRIBUTE = "name";
 
@@ -62,8 +62,8 @@ public class ShortestpathCostServiceImpl implements ShortestpathCostService {
 	@Override
 	public PathCost shortestpathCost(String nomeMapa, Float autonomia, Float valorCombustivel, String locationA, String locationB) throws WalmartException {
 
-  	if(log.isDebugEnabled()){
-  		log.debug("Iniciando calculo shortestpath!");
+  	if(logger.isDebugEnabled()){
+  		logger.debug("Iniciando calculo shortestpath!");
   	}
 		
 		// calcula custo em funcao de autonomia do veículo e preco do combustivel informados
@@ -76,8 +76,8 @@ public class ShortestpathCostServiceImpl implements ShortestpathCostService {
 			Node nodeA = nodes.get(0);
 			Node nodeB = nodes.get(1);
 			
-	  	if(log.isDebugEnabled()){
-	  		log.debug("Calculando menor caminho entre {} e {}!", nodeA, nodeB);
+	  	if(logger.isDebugEnabled()){
+	  		logger.debug("Calculando menor caminho entre {} e {}!", nodeA, nodeB);
 	  	}
 
 			// não haverá distinção de tipo de estrada ou direção do relacionamento
@@ -100,7 +100,7 @@ public class ShortestpathCostServiceImpl implements ShortestpathCostService {
 
 		} catch (Exception e) {
 
-			log.error("Erro ao tentar calcular shortest path",e);
+			logger.error("Erro ao tentar calcular shortest path",e);
 			
 			tx.failure();
 
@@ -186,7 +186,7 @@ public class ShortestpathCostServiceImpl implements ShortestpathCostService {
 		// checa registros retornados
 
 		if (nodes.size() != 2) {
-			log.error("foram encontrados {} pontos a partir dos pontos {} e {} informados!", nodes.size(), locationA, locationB);
+			logger.error("foram encontrados {} pontos a partir dos pontos {} e {} informados!", nodes.size(), locationA, locationB);
 			
 			throw new WalmartRuntimeException("Dois e apenas dois nos deveriam ter sido encontrados para o calculo do menor caminho! (pontos encontrados " + nodes + ") ");
 		}
